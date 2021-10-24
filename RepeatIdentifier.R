@@ -11,7 +11,7 @@ library(doParallel)
 #General settings#
 ##################
 
-#Parallelisation#
+#Multithreading#
   #it's based on amount of .fasta files provided as an input, to use more CPUs when running a single genome, it can be split into chromosomes
 #if left at 0, R will try to use the same amount or cores as the amount of .fasta files in the input folder
 set.no.of.cores = 0 
