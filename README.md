@@ -12,7 +12,7 @@ Local **kmer** counting finds regions that are repetitive. Windows (1kb by defau
 5. The script automatically tries to use as many CPUs as there are fasta files in the provided directory. If less cores should be used, "set.no.of.cores" variable can be changed. To use more cores, manually divide fasta files into chromosomes/regions. Multithreading not implemented for Windows OS **Optional**
 
 ## Outputs:
-Each file generates a separate directory with:
+For each fasta file input there will be created a separate directory with:
 1. frame4 directory that contains alignments. Can take up a lot of space and can be removed
 2. plots directory contains plots of each sequence in the fasta file with size (y axis) and position (x axis) plotted for each repeat
 3. All.repeats.from.NAME.csv file that contains all repeats in a csv format
