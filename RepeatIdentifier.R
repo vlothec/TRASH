@@ -6,6 +6,7 @@ library(Biostrings)
 library(seqinr)
 library(doParallel)
 
+
 ##################
 #General settings#
 ##################
@@ -19,8 +20,8 @@ set.no.of.cores = 0
 set.kmer = 12 # kmer size used for initial identification of repetitive regions
 set.threshold = 10 # window repetitiveness score (0-100) threshold
 set.max.repeat.size = 500 # max size of repeats to be identified
-outputs.directory = "~/Arabidopsis/output" # output folder. example "~/Arabidopsis/output"
-genomes.directory = "~/Arabidopsis/genomes" # folder with .fasta inputs. example "~/Arabidopsis/ath"
+outputs.directory = "" # output folder. example "~/Arabidopsis/output"
+genomes.directory = "" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
 sequence.templates = NA # used to match identified repeats to templates so they are globally in the same frame (same start position), set as NA to skip
   ##example: sequence.templates = read.csv(file = "~/sequence.template.csv")
   ##format: 
@@ -30,9 +31,11 @@ sequence.templates = NA # used to match identified repeats to templates so they 
 #MAFFT#
 #without mafft (https://mafft.cbrc.jp/alignment/software/) installed in the environment only regions containing repeats will be identified
 #tested with mafft-7.475-win64-signed
-skip.mafft = FALSE 
+skip.mafft = FALSE
 
 
+
+test.sequence = TRUE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
 ###########
 #Functions#
 ###########
@@ -171,9 +174,9 @@ test.random.Nmers = function(regions.data.frame, tests = 5, assemblyName, temp.f
   {
     dir.create(assemblyName)
   }
-  if(!dir.exists(paste(assemblyName, "/frame2", sep ="")))
+  if(!dir.exists(paste(temp.folder, "/", assemblyName, "/frame2", sep ="")))
   {
-    dir.create(paste(assemblyName, "/frame2", sep =""))
+    dir.create(paste(temp.folder, "/", assemblyName, "/frame2", sep =""))
   }
   
   for(i in 1 : nrow(regions.data.frame))
@@ -219,15 +222,21 @@ test.random.Nmers = function(regions.data.frame, tests = 5, assemblyName, temp.f
         }
         iii = iii - 1
       }
-      write.csv(temp, file = paste(assemblyName, "/frame2/", regions.data.frame$full.name[i], "_", i, "_", ii, ".csv", sep = ""), row.names = FALSE)
+      write.csv(temp, file = paste(temp.folder, "/", assemblyName, "/frame2/", regions.data.frame$full.name[i], "_", i, "_", ii, ".csv", sep = ""), row.names = FALSE)
       random.sequence.scores[ii] = sum(temp$end - temp$start)
     }
     #mafft
-    winner = read.csv(paste(assemblyName, "/frame2/", regions.data.frame$full.name[i], "_",  i, "_", which.max(random.sequence.scores), ".csv", sep = ""))
+    winner = read.csv(paste(temp.folder, "/", assemblyName, "/frame2/", regions.data.frame$full.name[i], "_",  i, "_", which.max(random.sequence.scores), ".csv", sep = ""))
     for(ii in 1 : nrow(winner))
     {
-      write.fasta(file.out = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
-                  names = paste(winner$start[ii], winner$end[ii], sep = "_"), sequences = winner[ii,4], open = "a", as.string = TRUE)
+      if(ncol(winner) == 5)
+      {
+        write.fasta(file.out = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
+                    names = paste(winner$start[ii], winner$end[ii], sep = "_"), sequences = winner[ii,4], open = "a", as.string = TRUE)
+      } else if(ncol(winner) == 4){
+        write.fasta(file.out = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
+                    names = paste(winner$start[ii], winner$end[ii], sep = "_"), sequences = winner$x[ii], open = "a", as.string = TRUE)
+      }
     }
     
     input = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = "")
@@ -689,6 +698,7 @@ kmer.compare = function(repA, repB, kmer.size = 8)
 identify.and.extract.repeats = function(temp.folder = "", genome.dir = "", genome = "", sequence.templates, kmer = 10, window = 1000, threshold = 10, filter.small = 1000, reach = 200, 
                                         filter.smaller.N = 3, plot.regions.scores = FALSE, random.Nmer.tests = 3, only.Chr1_5 = FALSE, single.pngs = TRUE, debug.text = FALSE)
 {
+  print(paste("Start file ", genome, sep = ""))
   fasta = paste(genome.dir, genome, sep ="/")
   assemblyName = strsplit(genome, split = "[.]")[[1]]
   assemblyName = str_c(assemblyName[1:(length(assemblyName) - 1)], collapse = ".")
@@ -698,7 +708,7 @@ identify.and.extract.repeats = function(temp.folder = "", genome.dir = "", genom
   if(debug.text) {print("frame1 done")}
   frame2 = closest.identical.kmer.distances(regions.data.frame = frame1, kmer = kmer, reach = reach, filter.smaller.N = filter.smaller.N, plot = plot.regions.scores)
   if(debug.text) {print("frame2 done")}
-  if(skip.mafft)
+  if(skip.mafft) 
   {
     frame7 = frame2[,-c(6)]
     write.csv(x = frame7, file = paste(temp.folder, "/", assemblyName, "/Summary.of.repetitive.regions.", assemblyName, ".csv", sep = ""), quote = FALSE)
@@ -737,6 +747,19 @@ identify.and.extract.repeats = function(temp.folder = "", genome.dir = "", genom
 #RUN#
 #####
 
+if(test.sequence == TRUE)
+{
+  if(Sys.info()['sysname'] == "Linux")
+  {
+    outputs.directory = "~/Arabidopsis/output" # output folder. example "~/Arabidopsis/output"
+    genomes.directory = "~/Arabidopsis/genomes" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
+  } else if(Sys.info()['sysname'] == "Windows")
+  {
+    outputs.directory = "C:/Users/wlodz/Desktop/RepeatIdentifyTests/output" # output folder. example "~/Arabidopsis/output"
+    genomes.directory = "C:/Users/wlodz/Desktop/RepeatIdentifyTests/genomes" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
+  }
+}
+
 if(Sys.info()['sysname'] == "Linux")
 {
   genome.names = system(paste("cd ", genomes.directory, " && ls -d *.fa*", sep = ""), intern = TRUE)
@@ -751,13 +774,25 @@ if(set.no.of.cores != 0)
   registerDoParallel(cores = length(genome.names))
 }
 
-print("Currently registered parallel backend name, version and cores")
-print(getDoParName())
-print(getDoParVersion())
-print(getDoParWorkers())
-foreach(i = 1 : length(genome.names)) %dopar% {
-  identify.and.extract.repeats(temp.folder = outputs.directory, genome.dir = genomes.directory, genome = genome.names[i], 
-                               sequence.templates = sequence.templates, kmer = set.kmer, threshold = set.threshold, reach = set.max.repeat.size, debug.text = FALSE)
+if(Sys.info()['sysname'] == "Linux")
+{
+  print("Currently registered parallel backend name, version and cores")
+  print(getDoParName())
+  print(getDoParVersion())
+  print(getDoParWorkers())
+  print("lets go")
+  foreach(i = 1 : length(genome.names)) %dopar% {
+    identify.and.extract.repeats(temp.folder = outputs.directory, genome.dir = genomes.directory, genome = genome.names[i], 
+                                 sequence.templates = sequence.templates, kmer = set.kmer, threshold = set.threshold, reach = set.max.repeat.size, debug.text = FALSE)
+  } 
+} else if(Sys.info()['sysname'] == "Windows")
+{
+  
+  genome.names = shell(paste("cd ", genomes.directory, " && dir /b | findstr .fa", sep = ""), intern = TRUE)
+  for(i in 1 : length(genome.names)){
+    identify.and.extract.repeats(temp.folder = outputs.directory, genome.dir = genomes.directory, genome = genome.names[i], 
+                                 sequence.templates = sequence.templates, kmer = set.kmer, threshold = set.threshold, reach = set.max.repeat.size, debug.text = FALSE)
+  } 
 }
 #####
 
