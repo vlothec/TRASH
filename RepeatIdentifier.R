@@ -1,21 +1,14 @@
 #!/usr/bin/env Rscript
-library(stringr)#
-#library(svMisc)#
+library(stringr)
 library(base)
-#library(magrittr)#
 library(msa)
 library(Biostrings)
-library(seqinr)#
-library(doParallel)#
+library(seqinr)
+library(doParallel)
 
 ##################
 #General settings#
 ##################
-
-#MAFFT#
-  #without mafft (https://mafft.cbrc.jp/alignment/software/) installed in the environment only regions containing repeats will be identified
-  #tested with mafft-7.475-win64-signed
-skip.mafft = FALSE 
 
 #Parallelisation#
   #it's based on amount of .fasta files provided as an input, to use more CPUs when running a single genome, it can be split into chromosomes
@@ -34,14 +27,11 @@ sequence.templates = NA # used to match identified repeats to templates so they 
   ##seq,name,length,group
   ##AGTATA,CEN180,180,ath
 
-#System#
-if(Sys.info()['sysname'] == "Linux")
-{
-  genome.names = shell(paste("cd ", genomes.directory, " && ls -d *.fa*", sep = ""), intern = TRUE)
-} else if(Sys.info()['sysname'] == "Windows")
-{
-  genome.names = shell(paste("cd ", genomes.directory, " && dir /b | findstr .fa", sep = ""), intern = TRUE)
-}
+#MAFFT#
+#without mafft (https://mafft.cbrc.jp/alignment/software/) installed in the environment only regions containing repeats will be identified
+#tested with mafft-7.475-win64-signed
+skip.mafft = FALSE 
+
 
 ###########
 #Functions#
@@ -126,7 +116,7 @@ identify.repetitive.regions = function(fastaDirectory = "", kmer = 12, window = 
     
     repetitive.windows = repetitive.windows[(repetitive.windows$end - repetitive.windows$start) > filter.small,]
     
-    print(paste("all done in ", (Sys.time() - time), sep = ""))
+    print(paste("Step 1 (identify windows) done in ", (Sys.time() - time), sep = ""))
   }
   gc()
   return(repetitive.windows)
@@ -234,21 +224,23 @@ test.random.Nmers = function(regions.data.frame, tests = 5, assemblyName, temp.f
     }
     #mafft
     winner = read.csv(paste(assemblyName, "/frame2/", regions.data.frame$full.name[i], "_",  i, "_", which.max(random.sequence.scores), ".csv", sep = ""))
-    print(paste("preextract", regions.data.frame$full.name[i], sep = " "))
     for(ii in 1 : nrow(winner))
     {
       write.fasta(file.out = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
                   names = paste(winner$start[ii], winner$end[ii], sep = "_"), sequences = winner[ii,4], open = "a", as.string = TRUE)
     }
     
-    print(paste("inputs read", regions.data.frame$full.name[i], sep = " "))
     input = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = "")
     output = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".aligned.fasta", sep = "")
     
-    print(paste("mafft exe", regions.data.frame$full.name[i], sep = " "))
-    shell(paste("mafft --retree 2 --inputorder ", input, " > ", output, sep = ""), intern = TRUE)
+    if(Sys.info()['sysname'] == "Linux")
+    {
+      system(paste("mafft --quiet --retree 2 --inputorder ", input, " > ", output, sep = ""), intern = TRUE)
+    } else if(Sys.info()['sysname'] == "Windows")
+    {
+      shell(paste("mafft --quiet --retree 2 --inputorder ", input, " > ", output, sep = ""), intern = TRUE)
+    }
     
-    print(paste("alignment read", regions.data.frame$full.name[i], sep = " "))
     alignment = read.alignment(output, format = "FASTA", forceToLower = FALSE)
     consensus = consensus(alignment, threshold = 0.3)
     consensus = toupper(consensus[consensus != "-"])
@@ -489,7 +481,13 @@ generate.secondary.consensus = function(regions.data.frame, assemblyName = "", t
       
       input = paste(assemblyName, "/frame4/inputs/primary.extract", ".", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", "fasta", sep = "")
       output = paste(assemblyName, "/frame4/outputs/primary.extract", ".", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", "aligned.fasta", sep = "")
-      shell(paste("mafft --retree 2 --inputorder ", input, " > ", output, sep = ""), intern = TRUE)
+      if(Sys.info()['sysname'] == "Linux")
+      {
+        system(paste("mafft --quiet --retree 2 --inputorder ", input, " > ", output, sep = ""), intern = TRUE)
+      } else if(Sys.info()['sysname'] == "Windows")
+      {
+        shell(paste("mafft --quiet --retree 2 --inputorder ", input, " > ", output, sep = ""), intern = TRUE)
+      }
       
       alignment = read.alignment(output, format = "FASTA", forceToLower = FALSE)
       consensus = consensus(alignment, threshold = 0.3)
@@ -688,16 +686,18 @@ kmer.compare = function(repA, repB, kmer.size = 8)
 }
 
 
-identify.and.extract.repeats = function(temp.folder = "", genome.dir = "", genome = "", sequence.templates, kmer = 10, window = 1000, threshold = 10, filter.small = 3000, reach = 200, 
-                                        filter.smaller.N = 3, plot.regions.scores = FALSE, random.Nmer.tests = 3, only.Chr1_5 = FALSE, single.pngs = TRUE)
+identify.and.extract.repeats = function(temp.folder = "", genome.dir = "", genome = "", sequence.templates, kmer = 10, window = 1000, threshold = 10, filter.small = 1000, reach = 200, 
+                                        filter.smaller.N = 3, plot.regions.scores = FALSE, random.Nmer.tests = 3, only.Chr1_5 = FALSE, single.pngs = TRUE, debug.text = FALSE)
 {
   fasta = paste(genome.dir, genome, sep ="/")
-  assemblyName = strsplit(genome, split = "[.]")[[1]][1]
+  assemblyName = strsplit(genome, split = "[.]")[[1]]
+  assemblyName = str_c(assemblyName[1:(length(assemblyName) - 1)], collapse = ".")
   a = Sys.time()
   frame1 = identify.repetitive.regions(fastaDirectory = fasta, kmer = kmer, window = window, threshold = threshold, filter.small = filter.small)
-  write.csv(x = frame1, file = paste(temp.folder, "/", assemblyName, "/Frame1.", assemblyName, ".csv", sep = ""), quote = FALSE)
+  frame1$full.name = assemblyName
+  if(debug.text) {print("frame1 done")}
   frame2 = closest.identical.kmer.distances(regions.data.frame = frame1, kmer = kmer, reach = reach, filter.smaller.N = filter.smaller.N, plot = plot.regions.scores)
-  
+  if(debug.text) {print("frame2 done")}
   if(skip.mafft)
   {
     frame7 = frame2[,-c(6)]
@@ -722,6 +722,7 @@ identify.and.extract.repeats = function(temp.folder = "", genome.dir = "", genom
     
     draw.scaffold.repeat.plots(temp.folder = temp.folder, assemblyName = assemblyName,fastaDirectory = fasta,only.Chr1_5 = only.Chr1_5,single.pngs = single.pngs)
     extract.all.repeats(temp.folder = temp.folder, assemblyName = assemblyName)
+    if(debug.text) {print("extracted repeats done")}
     b = difftime(Sys.time(), a, units = "hours")
     remove(frame1,frame2,frame3,frame4,frame7,fasta)
     print(paste("Genome ", assemblyName, " finished in ", round(b, digits = 3), " hours", sep = ""))
@@ -731,6 +732,18 @@ identify.and.extract.repeats = function(temp.folder = "", genome.dir = "", genom
 
 
 #####
+
+#####
+#RUN#
+#####
+
+if(Sys.info()['sysname'] == "Linux")
+{
+  genome.names = system(paste("cd ", genomes.directory, " && ls -d *.fa*", sep = ""), intern = TRUE)
+} else if(Sys.info()['sysname'] == "Windows")
+{
+  genome.names = shell(paste("cd ", genomes.directory, " && dir /b | findstr .fa", sep = ""), intern = TRUE)
+}
 if(set.no.of.cores != 0)
 {
   registerDoParallel(cores = set.no.of.cores)
@@ -744,7 +757,7 @@ print(getDoParVersion())
 print(getDoParWorkers())
 foreach(i = 1 : length(genome.names)) %dopar% {
   identify.and.extract.repeats(temp.folder = outputs.directory, genome.dir = genomes.directory, genome = genome.names[i], 
-                               sequence.templates = sequence.templates, kmer = set.kmer, threshold = set.threshold, reach = set.max.repeat.size)
+                               sequence.templates = sequence.templates, kmer = set.kmer, threshold = set.threshold, reach = set.max.repeat.size, debug.text = FALSE)
 }
 #####
 
