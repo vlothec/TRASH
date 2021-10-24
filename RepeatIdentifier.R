@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
 library(stringr)#
-library(svMisc)#
+#library(svMisc)#
 library(base)
-library(magrittr)#
+#library(magrittr)#
 library(msa)
 library(Biostrings)
 library(seqinr)#
@@ -14,31 +14,33 @@ library(doParallel)#
 
 #MAFFT#
   #without mafft (https://mafft.cbrc.jp/alignment/software/) installed in the environment only regions containing repeats will be identified
+  #tested with mafft-7.475-win64-signed
 skip.mafft = FALSE 
 
 #Parallelisation#
-  #if left at 0, R will try to use the same amount or cores as the amount of .fasta files in the input folder
+  #it's based on amount of .fasta files provided as an input, to use more CPUs when running a single genome, it can be split into chromosomes
+#if left at 0, R will try to use the same amount or cores as the amount of .fasta files in the input folder
 set.no.of.cores = 0 
 
 #Run settings#
 set.kmer = 12 # kmer size used for initial identification of repetitive regions
-set.threshold = 10 # window repetitivesystemness score (0-100) threshold
+set.threshold = 10 # window repetitiveness score (0-100) threshold
 set.max.repeat.size = 500 # max size of repeats to be identified
-outputs.directory = "" # output folder. example "~/Arabidopsis/output"
-genomes.directory = "" # folder with .fasta inputs. example "~/Arabidopsis/ath"
+outputs.directory = "~/Arabidopsis/output" # output folder. example "~/Arabidopsis/output"
+genomes.directory = "~/Arabidopsis/genomes" # folder with .fasta inputs. example "~/Arabidopsis/ath"
 sequence.templates = NA # used to match identified repeats to templates so they are globally in the same frame (same start position), set as NA to skip
-##sequence.templates = read.csv(file = "~/sequence.template.csv")
-##format: 
-##seq,name,length,group
-##AGTATA,CEN180,180,ath
+  ##example: sequence.templates = read.csv(file = "~/sequence.template.csv")
+  ##format: 
+  ##seq,name,length,group
+  ##AGTATA,CEN180,180,ath
 
 #System#
 if(Sys.info()['sysname'] == "Linux")
 {
-  genome.names = system(paste("cd ", genomes.directory, " && ls -d *.fa*", sep = ""), intern = TRUE)
+  genome.names = shell(paste("cd ", genomes.directory, " && ls -d *.fa*", sep = ""), intern = TRUE)
 } else if(Sys.info()['sysname'] == "Windows")
 {
-  genome.names = system(paste("cd ", genomes.directory, " && ls -d *.fa*", sep = ""), intern = TRUE)
+  genome.names = shell(paste("cd ", genomes.directory, " && dir /b | findstr .fa", sep = ""), intern = TRUE)
 }
 
 ###########
@@ -244,7 +246,7 @@ test.random.Nmers = function(regions.data.frame, tests = 5, assemblyName, temp.f
     output = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".aligned.fasta", sep = "")
     
     print(paste("mafft exe", regions.data.frame$full.name[i], sep = " "))
-    system(paste("mafft --retree 2 --inputorder ", input, " > ", output, sep = ""))
+    shell(paste("mafft --retree 2 --inputorder ", input, " > ", output, sep = ""), intern = TRUE)
     
     print(paste("alignment read", regions.data.frame$full.name[i], sep = " "))
     alignment = read.alignment(output, format = "FASTA", forceToLower = FALSE)
@@ -487,7 +489,7 @@ generate.secondary.consensus = function(regions.data.frame, assemblyName = "", t
       
       input = paste(assemblyName, "/frame4/inputs/primary.extract", ".", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", "fasta", sep = "")
       output = paste(assemblyName, "/frame4/outputs/primary.extract", ".", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", "aligned.fasta", sep = "")
-      system(paste("mafft --retree 2 --inputorder ", input, " > ", output, sep = ""))
+      shell(paste("mafft --retree 2 --inputorder ", input, " > ", output, sep = ""), intern = TRUE)
       
       alignment = read.alignment(output, format = "FASTA", forceToLower = FALSE)
       consensus = consensus(alignment, threshold = 0.3)
