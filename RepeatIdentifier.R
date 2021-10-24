@@ -6,7 +6,7 @@ library(magrittr)#
 library(msa)
 library(Biostrings)
 library(seqinr)#
-library(doParallel)
+library(doParallel)#
 
 ##################
 #General settings#
