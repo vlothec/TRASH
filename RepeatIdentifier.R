@@ -35,7 +35,7 @@ skip.mafft = FALSE
 
 
 
-test.sequence = TRUE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
+test.sequence = FALSE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
 ###########
 #Functions#
 ###########
