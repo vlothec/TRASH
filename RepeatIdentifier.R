@@ -13,8 +13,8 @@ library(doParallel)
 
 #Multithreading#
 #it's based on amount of .fasta files provided as an input, to use more CPUs when running a single genome, it can be split into chromosomes
-#if left at 0, R will try to use the same amount or cores as the amount of .fasta files in the input folder
-set.no.of.cores = 0 
+#if left at 0, R will try to use the same amount or cores as the amount of sequence files in the input folder
+set.no.of.cores = 47 
 
 #Run settings#
 set.kmer = 12 # kmer size used for initial identification of repetitive regions
@@ -35,7 +35,7 @@ skip.mafft = FALSE
 
 
 
-test.sequence = FALSE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
+test.sequence = TRUE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
 ###########
 #Functions#
 ###########
@@ -670,12 +670,6 @@ if(!is.na(sequence.templates))
 if(Sys.info()['sysname'] == "Linux")
 {
   genome.names = system(paste("cd ", genomes.directory, " && ls -d *.fa*", sep = ""), intern = TRUE)
-  if(set.no.of.cores != 0)
-  {
-    registerDoParallel(cores = set.no.of.cores)
-  } else {
-    registerDoParallel(cores = length(genome.names))
-  }
 } else if(Sys.info()['sysname'] == "Windows")
 {
   genome.names = shell(paste("cd ", genomes.directory, " && dir /b | findstr .fa", sep = ""), intern = TRUE)
@@ -694,6 +688,17 @@ for(i in 1 : length(genome.names))
     index = index + 1
   }
 }
+if(Sys.info()['sysname'] == "Linux")
+{
+  if(set.no.of.cores != 0)
+  {
+    registerDoParallel(cores = set.no.of.cores)
+  } else {
+    registerDoParallel(cores = nrow(sequences))
+  }
+} else if(Sys.info()['sysname'] == "Windows")
+{
+}
 
 #####
 if(Sys.info()['sysname'] == "Linux")
@@ -702,7 +707,7 @@ if(Sys.info()['sysname'] == "Linux")
   print(getDoParName())
   print(getDoParVersion())
   print(getDoParWorkers())
-  foreach(i = 1 : length(genome.names)) %dopar% {
+  foreach(i = 1 : nrow(sequences)) %dopar% {
     identified = RepeatIdentifier(DNA.sequence = sequences$sequence[i], assemblyName = sequences$assembly.name[i], fasta.name = sequences$fasta.name[i], 
                                   kmer = set.kmer, window = 1000, threshold = set.threshold, mask.small.regions = 0, mask.small.repeats = 0,
                                   max.repeat.size = set.max.repeat.size, filter.smaller.N = 0,
