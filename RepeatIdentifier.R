@@ -12,7 +12,7 @@ library(doParallel)
 ##################
 
 #Multithreading#
-  #it's based on amount of .fasta files provided as an input, to use more CPUs when running a single genome, it can be split into chromosomes
+#it's based on amount of .fasta files provided as an input, to use more CPUs when running a single genome, it can be split into chromosomes
 #if left at 0, R will try to use the same amount or cores as the amount of .fasta files in the input folder
 set.no.of.cores = 0 
 
@@ -22,11 +22,11 @@ set.threshold = 10 # window repetitiveness score (0-100) threshold
 set.max.repeat.size = 500 # max size of repeats to be identified
 outputs.directory = "" # output folder. example "~/Arabidopsis/output"
 genomes.directory = "" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
-sequence.templates = NA # used to match identified repeats to templates so they are globally in the same frame (same start position), set as NA to skip
-  ##example: sequence.templates = read.csv(file = "~/sequence.template.csv")
-  ##format: 
-  ##seq,name,length,group
-  ##AGTATA,CEN180,180,ath
+sequence.templates = NA # path to a csv file used to match identified repeats to templates so they are globally in the same frame (same start position), set as NA to skip
+##example: sequence.templates = "~/sequence.template.csv"
+##format: 
+##seq,name,length,group
+##AGTATA,CEN180,180,ath
 
 #MAFFT#
 #without mafft (https://mafft.cbrc.jp/alignment/software/) installed in the environment only regions containing repeats will be identified
@@ -35,108 +35,137 @@ skip.mafft = FALSE
 
 
 
-test.sequence = FALSE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
+test.sequence = TRUE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
 ###########
 #Functions#
 ###########
 
 revCompString = function(DNAstr) {return(toupper(toString(reverseComplement(DNAString(DNAstr))))) }
 
-# 1. Identify repetitive regions
-identify.repetitive.regions = function(fastaDirectory = "", kmer = 12, window = 1000, threshold = 10, filter.small = 0)
+extract.kmers = function(fasta.sequence, kmer.size)
 {
-  time = Sys.time()
-  
-  fasta = read.fasta(fastaDirectory, as.string = TRUE)
-  
-  repetitive.windows = data.frame(index = integer(), fasta.name = character(), start = integer(), end = integer(), average.score = double(), window.sequence = character(), most.freq.value.N = integer())
+  fasta.sequence = strsplit(fasta.sequence, split = "")[[1]]
+  size = length(fasta.sequence)
+  fasta.sequence = c(fasta.sequence, fasta.sequence)
+  kmers = vector(mode = "character", length = size)
+  for(i in 1 : size)
+  {
+    kmers[i] = paste(fasta.sequence[i : (i + kmer.size - 1)], collapse = "")
+  }
+  return(kmers)
+}
+
+kmer.compare = function(repA, repB, kmer.size = 8)
+{
+  if(is.na(repA))
+  {
+    print("repA not a character!")
+    return(0)
+  }
+  if(is.na(repB))
+  {
+    print("repB not a character!")
+    return(0)
+  }
+  repAkmers = extract.kmers(repA, kmer.size)
+  repBkmers = extract.kmers(repB, kmer.size)
+  common = ( length(which(repBkmers %in% repAkmers)) + length(which(repAkmers %in% repBkmers)) ) / 2
+  if(is.na(common))
+  {
+    return(0)
+  }
+  d = 100 * common/ave(nchar(repA), nchar(repB))
+  if(is.na(d))
+  {
+    return(0)
+  }
+  return(d)
+}
+
+RepeatIdentifier = function(DNA.sequence = "", assemblyName = "", fasta.name = "", 
+                            kmer = 12, window = 1000, threshold = 10, mask.small.regions = 0, mask.small.repeats = 0,
+                            max.repeat.size = 500, filter.smaller.N = 2,
+                            tests = 5, temp.folder = "",
+                            sequence.template)
+{
+  print(paste("starting the main function", assemblyName, fasta.name, sep = " "))
+  regions.data.frame = data.frame(index = integer(), fasta.name = character(), start = integer(), end = integer(), average.score = double(), most.freq.value.N = integer())
   
   index = 0
   
-  for(i in 1 : length(fasta))   # for every fasta sequence in the file
+  seq.length = nchar(DNA.sequence)
+  
+  scores = vector(mode = "numeric", length = seq.length %/% window + 1)
+  
+  for(ii in 1 : (length(scores) - 1))  # for every window of size window but not the last one
   {
-    
-    seqA = fasta[[i]]
-    seqA = toupper(seqA)
-    seq.length = nchar(seqA)
-    scores = vector(mode = "numeric", length = seq.length %/% window + 1)
-    
-    for(ii in 1 : (length(scores) - 1))  # for every window of size window but not the last one
+    if(ii%%window == 0)
     {
-      if(ii%%window == 0)
-      {
-        print(paste("sequence ", i, "/", length(fasta), ", window ", ii, "/", length(scores), sep = ""))
-      }
-      window.start = (ii - 1) * window
-      check.window = str_sub(seqA, window.start, (window.start + window - 1))
-      for(iii in 1 : (window - kmer))
-      {
-        check.string = str_sub(string = check.window, start = iii, end = (iii + kmer - 1))
-        count = 1 * ((str_count(string = check.string, pattern = "N") == 0) & str_count(string = check.window, pattern = check.string) > 1)
-        scores[ii] = scores[ii] + count
-      }
+      print(paste("Checking windows of sequence ", fasta.name, ", window ", ii, "/", length(scores), sep = ""))
     }
-    ii = length(scores) # for the last window
-    print(paste("sequence ", i, "/", length(fasta), ", window ", ii, "/", length(scores), sep = ""))
     window.start = (ii - 1) * window
-    check.window = str_sub(seqA, window.start)
-    for(iii in 1 : (nchar(check.window) - kmer))
+    check.window = str_sub(DNA.sequence, window.start, (window.start + window - 1))
+    for(iii in 1 : (window - kmer))
     {
       check.string = str_sub(string = check.window, start = iii, end = (iii + kmer - 1))
       count = 1 * ((str_count(string = check.string, pattern = "N") == 0) & str_count(string = check.window, pattern = check.string) > 1)
       scores[ii] = scores[ii] + count
     }
-    
-    scores[1 : (length(scores) - 1)] = scores[1 : (length(scores) - 1)] / window * 100 #change score into a percentage score
-    scores[length(scores)] = scores[length(scores)] / nchar(check.window)
-    
-    ii = 1
-    while(ii <= length(scores)) #apply threshold and save repetitive windows from this fasta
-    {
-      if(scores[ii] >= threshold)
-      {
-        index = index + 1
-        name = names(fasta)[i]
-        start = (ii - 1) * window
-        end = start - 1
-        ave.score = 0
-        s = 0
-        while(scores[ii] >= threshold)
-        {
-          s = s + 1
-          end = end + window
-          ave.score = scores[ii] + ave.score 
-          ii = ii + 1
-        }
-        ave.score = ave.score / s
-        window.sequence = str_sub(seqA, start, end)
-        most.freq.value.N = 0
-        temp = data.frame(index, name, start, end, ave.score, window.sequence, most.freq.value.N)
-        repetitive.windows = rbind(repetitive.windows, temp)
-      }
-      ii = ii + 1
-    }
-    
-    repetitive.windows = repetitive.windows[(repetitive.windows$end - repetitive.windows$start) > filter.small,]
-    
-    print(paste("Step 1 (identify windows) done in ", (Sys.time() - time), sep = ""))
   }
-  gc()
-  return(repetitive.windows)
-}
-
-# 2. Calculate closest identical k-mer distances
-closest.identical.kmer.distances = function(regions.data.frame, kmer = 12, reach = 500, filter.smaller.N = 2, plot = FALSE)
-{
+  ii = length(scores) # for the last window
+  print(paste("sequence ", fasta.name, ", window ", ii, "/", length(scores), sep = ""))
+  window.start = (ii - 1) * window
+  check.window = str_sub(DNA.sequence, window.start)
+  for(iii in 1 : (nchar(check.window) - kmer))
+  {
+    check.string = str_sub(string = check.window, start = iii, end = (iii + kmer - 1))
+    count = 1 * ((str_count(string = check.string, pattern = "N") == 0) & str_count(string = check.window, pattern = check.string) > 1)
+    scores[ii] = scores[ii] + count
+  }
+  
+  scores[1 : (length(scores) - 1)] = scores[1 : (length(scores) - 1)] / window * 100 #change score into a percentage score
+  scores[length(scores)] = scores[length(scores)] / nchar(check.window)
+  
+  ii = 1
+  while(ii <= length(scores)) #apply threshold and save repetitive windows from this fasta
+  {
+    if(scores[ii] >= threshold)
+    {
+      index = index + 1
+      name = fasta.name
+      start = (ii - 1) * window
+      end = start - 1
+      ave.score = 0
+      s = 0
+      while(scores[ii] >= threshold)
+      {
+        s = s + 1
+        end = end + window
+        ave.score = scores[ii] + ave.score 
+        ii = ii + 1
+      }
+      ave.score = ave.score / s
+      most.freq.value.N = 0
+      temp = data.frame(index, name, start, end, ave.score, most.freq.value.N)
+      regions.data.frame = rbind(regions.data.frame, temp)
+    }
+    ii = ii + 1
+  }
+  
+  regions.data.frame = regions.data.frame[(regions.data.frame$end - regions.data.frame$start) > mask.small.regions,]
+  
+  print(paste("Step 1 (identify windows) done", sep = ""))
+  
+  
   for(i in 1 : nrow(regions.data.frame))
   {
-    seqB = regions.data.frame$window.sequence[i]
+    seqB = str_sub(DNA.sequence, regions.data.frame$start[i], regions.data.frame$end[i])
     print(paste("calculating distances on region ", i, "/", nrow(regions.data.frame), " region size: ", nchar(seqB), sep = ""))
     distance = vector(mode = "numeric", length =  nchar(seqB))
     for(ii in 1 : (nchar(seqB) - kmer + 1))
     {
       kmer.pattern = str_sub(seqB, ii, ii + kmer - 1)
-      window.string = str_sub(seqB, ii + 1, ii + reach)
+      window.string = str_sub(seqB, ii + 1, ii + max.repeat.size)
       distance[ii] = str_locate(string = window.string, pattern = kmer.pattern)[[1]]
     }
     distance = distance[!is.na(distance)]
@@ -145,25 +174,16 @@ closest.identical.kmer.distances = function(regions.data.frame, kmer = 12, reach
     {
       a = hist(distance, breaks = max(distance), plot = FALSE)
       regions.data.frame$most.freq.value.N[i] = a$breaks[which.max(a$counts) + 1]
-      if(plot == TRUE)
-      {
-        png(filename = paste("", regions.data.frame$name[i], ".", regions.data.frame$index[i], ".N=", regions.data.frame$most.freq.value.N[i], ".png", sep = ""), width = 750, height = 500, pointsize = 25)
-        hist(distance, breaks = max(distance), main = paste("Histogram of", regions.data.frame$name[i], "index", regions.data.frame$index[i], "N =", regions.data.frame$most.freq.value.N[i], sep = " "))
-        dev.off()
-      }
     }
   }
-  ##regions.data.frame = regions.data.frame[regions.data.frame$most.freq.value.N >= filter.smaller.N,]
-  gc()
-  return(regions.data.frame)
-}
-
-# 3. Test random N-size mers, handle overlaps, choose the best one, extract repeats for mafft alignment
-test.random.Nmers = function(regions.data.frame, tests = 5, assemblyName, temp.folder = "", remove.temp = TRUE)
-{
-  #regions.data.frame$full.name[i]
+  
+  ##regions.data.frame = regions.data.frame[regions.data.frame$most.freq.value.N >= mask.small.repeats,]
+  
+  #Test random N-size mers, handle overlaps, choose the best one, extract repeats for mafft alignment
+  
   consensus.primary = vector(mode = "character", length = nrow(regions.data.frame))
   consensus.count = vector(mode = "numeric", length = nrow(regions.data.frame))
+  
   if(temp.folder == "")
   {
     stop("no temp folder")
@@ -182,7 +202,7 @@ test.random.Nmers = function(regions.data.frame, tests = 5, assemblyName, temp.f
   for(i in 1 : nrow(regions.data.frame))
   {
     print(paste("testing region ", i, "/", nrow(regions.data.frame), " window size: ", regions.data.frame$end[i] - regions.data.frame$start[i], sep = ""))
-    seqC = regions.data.frame$window.sequence[i]
+    seqC = str_sub(DNA.sequence, regions.data.frame$start[i], regions.data.frame$end[i])
     N = regions.data.frame$most.freq.value.N[i]
     if(N == 0)
     {
@@ -222,25 +242,34 @@ test.random.Nmers = function(regions.data.frame, tests = 5, assemblyName, temp.f
         }
         iii = iii - 1
       }
-      write.csv(temp, file = paste(temp.folder, "/", assemblyName, "/frame2/", regions.data.frame$full.name[i], "_", i, "_", ii, ".csv", sep = ""), row.names = FALSE)
+      write.csv(temp, file = paste(temp.folder, "/", assemblyName, "/frame2/", fasta.name, "_", i, "_", ii, ".csv", sep = ""), row.names = FALSE)
       random.sequence.scores[ii] = sum(temp$end - temp$start)
     }
     #mafft
-    winner = read.csv(paste(temp.folder, "/", assemblyName, "/frame2/", regions.data.frame$full.name[i], "_",  i, "_", which.max(random.sequence.scores), ".csv", sep = ""))
-    for(ii in 1 : nrow(winner))
+    winner = read.csv(paste(temp.folder, "/", assemblyName, "/frame2/", fasta.name, "_",  i, "_", which.max(random.sequence.scores), ".csv", sep = ""))
+    #for(ii in 1 : nrow(winner))
+    #{
+    #  if(ncol(winner) == 5)
+    #  {
+    #    write.fasta(file.out = paste(assemblyName, "/frame2/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
+    #                names = paste(winner$start[ii], winner$end[ii], sep = "_"), sequences = winner[ii,4], open = "a", as.string = TRUE)
+    #  } else if(ncol(winner) == 4){
+    #    write.fasta(file.out = paste(assemblyName, "/", "/frame2/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
+    #                names = paste(winner$start[ii], winner$end[ii], sep = "_"), sequences = winner$x[ii], open = "a", as.string = TRUE)
+    #  }
+    #}
+    if(ncol(winner) == 5)
     {
-      if(ncol(winner) == 5)
-      {
-        write.fasta(file.out = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
-                    names = paste(winner$start[ii], winner$end[ii], sep = "_"), sequences = winner[ii,4], open = "a", as.string = TRUE)
-      } else if(ncol(winner) == 4){
-        write.fasta(file.out = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
-                    names = paste(winner$start[ii], winner$end[ii], sep = "_"), sequences = winner$x[ii], open = "a", as.string = TRUE)
-      }
+      write.fasta(file.out = paste(assemblyName, "/frame2/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
+                  names = paste(winner$start, winner$end, sep = "_"), sequences = str_split(winner[ii,4], pattern = ""), open = "w", as.string = FALSE)
+    } else if(ncol(winner) == 4){
+      write.fasta(file.out = paste(assemblyName, "/", "/frame2/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
+                  names = paste(winner$start[ii], winner$end[ii], sep = "_"), sequences = str_split(winner$x, pattern = ""), open = "w", as.string = FALSE)
     }
     
-    input = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = "")
-    output = paste(assemblyName, "/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".aligned.fasta", sep = "")
+    
+    input = paste(assemblyName, "/frame2/",  i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = "")
+    output = paste(assemblyName, "/frame2/",  i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".aligned.fasta", sep = "")
     
     if(Sys.info()['sysname'] == "Linux")
     {
@@ -261,120 +290,71 @@ test.random.Nmers = function(regions.data.frame, tests = 5, assemblyName, temp.f
     
     remove(alignment, input, output, winner)
   }
-  if(remove.temp)
+  regions.data.frame = cbind(regions.data.frame, consensus.primary)
+  regions.data.frame = cbind(regions.data.frame, consensus.count)
+  
+  
+  print(paste("finished test random Nmers of ", assemblyName, ": ", fasta.name, sep = ""))
+  
+  
+  # 3.5 Shift the primary consensus sequences to match a given sequence, only those regions with N within a given range
+  regions.data.frame$class = ""
+  if(!is.na(sequence.template)[1])
   {
-    unlink(assemblyName, recursive = TRUE)
-  }
-  print(paste("finished test random Nmers of", regions.data.frame$full.name[i], sep = " "))
-  gc()
-  return(cbind(regions.data.frame, consensus.primary, consensus.count))
-}
-
-
-#kamers
-
-extract.kmers = function(fasta.sequence, kmer.size)
-{
-  fasta.sequence = strsplit(fasta.sequence, split = "")[[1]]
-  size = length(fasta.sequence)
-  fasta.sequence = c(fasta.sequence, fasta.sequence)
-  kmers = vector(mode = "character", length = size)
-  for(i in 1 : size)
-  {
-    kmers[i] = paste(fasta.sequence[i : (i + kmer.size - 1)], collapse = "")
-  }
-  return(kmers)
-}
-
-
-kmer.compare = function(repA, repB, kmer.size = 8)
-{
-  if(is.na(repA))
-  {
-    print("repA not a character!")
-    return(0)
-  }
-  if(is.na(repB))
-  {
-    print("repB not a character!")
-    return(0)
-  }
-  repAkmers = extract.kmers(repA, kmer.size)
-  repBkmers = extract.kmers(repB, kmer.size)
-  common = ( length(which(repBkmers %in% repAkmers)) + length(which(repAkmers %in% repBkmers)) ) / 2
-  if(is.na(common))
-  {
-    return(0)
-  }
-  d = 100 * common/ave(nchar(repA), nchar(repB))
-  if(is.na(d))
-  {
-    return(0)
-  }
-  return(d)
-}
-
-# 3.5 Shift the primary consensus sequences to match a given sequence, only those regions with N within a given range
-shift.primary.consensus = function(regions.data.frame, sequence.template)
-{
-  for(i in 1 : nrow(regions.data.frame))
-  {
-    highest = NULL
-    check.seq = regions.data.frame$consensus.primary[i]
-    if((nchar(check.seq) > (min(sequence.template$length)-10)) & (nchar(check.seq) < (max(sequence.template$length)+10)))
+    for(i in 1 : nrow(regions.data.frame))
     {
-      scores = NULL
-      for(ii in 1 : nrow(sequence.template))
+      highest = NULL
+      check.seq = regions.data.frame$consensus.primary[i]
+      if((nchar(check.seq) > (min(sequence.template$length)-10)) & (nchar(check.seq) < (max(sequence.template$length)+10)))
       {
-        scores = c(scores, kmer.compare(sequence.template$seq[ii], check.seq))
-      }
-      highest = which.max(scores)
-      
-      seq.len = nchar(check.seq)
-      #create a df of all possible shifts and a column for their scores
-      shifts = data.frame(seq = vector(mode = "character", length = (seq.len * 2)), score = vector(mode = "numeric", length = (seq.len * 2)))
-      #split the sequence to make it easier to handle
-      seq.to.split.plus = strsplit(check.seq, split = "")[[1]]
-      seq.to.split.revcomp = strsplit(revCompString(check.seq), split = "")[[1]]
-      #handle problematic first and last cases
-      shifts$seq[1] = paste(seq.to.split.plus, collapse = "")
-      shifts$seq[(seq.len)] = paste(c(seq.to.split.plus[seq.len], seq.to.split.plus[1 : (seq.len - 1)]), collapse = "")
-      shifts$seq[seq.len  + 1] = paste(seq.to.split.revcomp, collapse = "")
-      shifts$seq[(seq.len * 2)] = paste(c(seq.to.split.revcomp[seq.len], seq.to.split.revcomp[1 : (seq.len - 1)]), collapse = "")
-      #do forward strand
-      for(ii in 2 : (seq.len - 1))
-      {
-        shifts$seq[ii] = paste(c(seq.to.split.plus[ii : seq.len], seq.to.split.plus[1 : (ii - 1)]), collapse = "")
-      }
-      #do reverse strand
-      for(ii in 2 : (seq.len - 1))
-      {
-        shifts$seq[ii + seq.len] = paste(c(seq.to.split.revcomp[ii : seq.len], seq.to.split.revcomp[1 : (ii - 1)]), collapse = "")
-      }
-      #align sequence.template to the shifts
-      for(ii in 1 : nrow(shifts))
-      {
-        if(ii%%100 == 0)
+        scores = NULL
+        for(ii in 1 : nrow(sequence.template))
         {
-          print(paste("Aligning shfit ", ii, " out of ", nrow(shifts), " from region ", i, paste = ""))
+          scores = c(scores, kmer.compare(sequence.template$seq[ii], check.seq))
         }
-        #TODO choose an alignment method that gives a precise score and align and save the score in the table
-        shifts$score[ii] =  pairwiseAlignment(pattern = shifts$seq[ii], subject = sequence.template$seq[highest], type = "global", scoreOnly = TRUE)
+        highest = which.max(scores)
+        
+        seq.len = nchar(check.seq)
+        #create a df of all possible shifts and a column for their scores
+        shifts = data.frame(seq = vector(mode = "character", length = (seq.len * 2)), score = vector(mode = "numeric", length = (seq.len * 2)))
+        #split the sequence to make it easier to handle
+        seq.to.split.plus = strsplit(check.seq, split = "")[[1]]
+        seq.to.split.revcomp = strsplit(revCompString(check.seq), split = "")[[1]]
+        #handle problematic first and last cases
+        shifts$seq[1] = paste(seq.to.split.plus, collapse = "")
+        shifts$seq[(seq.len)] = paste(c(seq.to.split.plus[seq.len], seq.to.split.plus[1 : (seq.len - 1)]), collapse = "")
+        shifts$seq[seq.len  + 1] = paste(seq.to.split.revcomp, collapse = "")
+        shifts$seq[(seq.len * 2)] = paste(c(seq.to.split.revcomp[seq.len], seq.to.split.revcomp[1 : (seq.len - 1)]), collapse = "")
+        #do forward strand
+        for(ii in 2 : (seq.len - 1))
+        {
+          shifts$seq[ii] = paste(c(seq.to.split.plus[ii : seq.len], seq.to.split.plus[1 : (ii - 1)]), collapse = "")
+        }
+        #do reverse strand
+        for(ii in 2 : (seq.len - 1))
+        {
+          shifts$seq[ii + seq.len] = paste(c(seq.to.split.revcomp[ii : seq.len], seq.to.split.revcomp[1 : (ii - 1)]), collapse = "")
+        }
+        #align sequence.template to the shifts
+        for(ii in 1 : nrow(shifts))
+        {
+          if(ii%%100 == 0)
+          {
+            print(paste("Aligning shfit ", ii, " out of ", nrow(shifts), " from region ", i, paste = ""))
+          }
+          #TODO choose an alignment method that gives a precise score and align and save the score in the table
+          shifts$score[ii] =  pairwiseAlignment(pattern = shifts$seq[ii], subject = sequence.template$seq[highest], type = "global", scoreOnly = TRUE)
+        }
+        #return the highest score shift as a primary.shifted[i]
+        regions.data.frame$consensus.primary[i] = shifts$seq[which.max(shifts$score)]
+        regions.data.frame$class[i] = sequence.template$name[highest]
       }
-      #return the highest score shift as a primary.shifted[i]
-      regions.data.frame$consensus.primary[i] = shifts$seq[which.max(shifts$score)]
     }
   }
-  return(cbind(regions.data.frame))
-}
-
-# 4. Refine each consensus by mapping again, aligning with mafft and extracting consensus 
-#TODO: check for mafft version
-#TODO: change hwere input and output mafft files are created to a different temp directory
-#TODO: mafft.directory not needed
-#TODO: check and remove .bat from, mafft
-generate.secondary.consensus = function(regions.data.frame, assemblyName = "", temp.folder = "", temp.remove = FALSE)
-{
+  
+  
+  # 4. Refine each consensus by mapping again, aligning with mafft and extracting consensus 
+  
   if(temp.folder == "")
   {
     stop("no temp folder")
@@ -406,7 +386,7 @@ generate.secondary.consensus = function(regions.data.frame, assemblyName = "", t
   {
     
     print(paste("generating consensus for region ", i, "/", nrow(regions.data.frame), " window size: ", regions.data.frame$end[i] - regions.data.frame$start[i], sep = ""))
-    seqC = regions.data.frame$window.sequence[i]
+    seqC = str_sub(DNA.sequence, regions.data.frame$start[i], regions.data.frame$end[i])
     N = regions.data.frame$most.freq.value.N[i]
     maxMis = N %/% 3
     if(maxMis > 100)
@@ -421,7 +401,7 @@ generate.secondary.consensus = function(regions.data.frame, assemblyName = "", t
     {
       tempP$strand = "+"
     }
-    matchMinus = matchPattern(pattern = toupper(revCompString(regions.data.frame$consensus.primary[i])), subject = seqC, max.mismatch = maxMis, with.indels = TRUE)
+    matchMinus = matchPattern(pattern = revCompString(regions.data.frame$consensus.primary[i]), subject = seqC, max.mismatch = maxMis, with.indels = TRUE)
     tempM = as.data.frame(matchMinus)
     tempM$start  = start(matchMinus)
     tempM$end = end(matchMinus)
@@ -460,7 +440,7 @@ generate.secondary.consensus = function(regions.data.frame, assemblyName = "", t
     
     for(ii in 1 : nrow(match))
     {
-      match$seq[ii] = substr(regions.data.frame$window.sequence[i], start = match$start[ii], stop = match$end[ii])
+      match$seq[ii] = substr(seqC, start = match$start[ii], stop = match$end[ii])
       {
         if(match$strand[ii] == "-")
         {
@@ -472,19 +452,21 @@ generate.secondary.consensus = function(regions.data.frame, assemblyName = "", t
     match = match[match$end > match$start,]
     match = match[match$width > 0,]
     match$class = regions.data.frame$class[i]
-    match$region.name = regions.data.frame$full.name[i]
-    
+    match$region.name = paste(assemblyName, fasta.name, sep = "_")
     
     
     if(nrow(match) > 0)
     {
       write.csv(x = match, file = paste(assemblyName, "/frame4", "/Repeats_", regions.data.frame$name[i], "_", regions.data.frame$start[i], "_", regions.data.frame$end[i], ".csv", sep = ""))
       #export sequences in fasta
-      for(ii in 1 : nrow(match))
-      {
-        write.fasta(sequences = match$seq[ii], names = paste(assemblyName, ".primary.extract.", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", ii, sep = ""), 
-                    file.out = paste(assemblyName, "/frame4/inputs/primary.extract", ".", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", "fasta", sep = ""), open = "a", as.string = TRUE)
-      }
+      #for(ii in 1 : nrow(match))
+      #{
+      #  write.fasta(sequences = match$seq[ii], names = paste(assemblyName, ".primary.extract.", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", ii, sep = ""), 
+      #              file.out = paste(assemblyName, "/frame4/inputs/primary.extract", ".", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", "fasta", sep = ""), open = "a", as.string = TRUE)
+      #}
+      write.fasta(sequences = str_split(match$seq, pattern = ""), names = paste(assemblyName, ".primary.extract.", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", match$start, sep = ""), 
+                  file.out = paste(assemblyName, "/frame4/inputs/primary.extract", ".", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", "fasta", sep = ""), open = "w")
+      
       
       #mafft
       
@@ -507,14 +489,10 @@ generate.secondary.consensus = function(regions.data.frame, assemblyName = "", t
       consensus.secondary[i] = consensus
       remove(consensus)
     }
-    if(temp.remove)
-    {
-      unlink(paste(assemblyName, "/frame4/inputs", sep = ""), recursive = TRUE)
-      unlink(paste(assemblyName, "/frame4/outputs", sep = ""), recursive = TRUE)
-    }
   }
+  regions.data.frame = cbind(regions.data.frame, consensus.secondary, repeats.identified)
   gc()
-  return(cbind(regions.data.frame, consensus.secondary, repeats.identified))
+  return(regions.data.frame)
 }
 
 draw.scaffold.repeat.plots = function(temp.folder = "", assemblyName = "", fastaDirectory = "", only.Chr1_5 = TRUE, single.pngs = FALSE)
@@ -635,9 +613,15 @@ extract.all.repeats = function(temp.folder = "", assemblyName = "")
   }
   for(i in 1 : length(files))
   {
-    print(paste("Reading file ", i, " out of ", length(files), paste = ""))
     region = read.csv(file = paste(assemblyName, "/frame4/", files[i], sep = ""), header = TRUE)
-    region = region[,-c(1)]
+    if(Sys.info()['sysname'] == "Linux")
+    {
+      region = region[,-c(1)]
+    } else if(Sys.info()['sysname'] == "Windows")
+    {
+      region = region[,-c(1,2)]
+    }
+    
     
     #region = region[,c(1,3,4,7,6,5)]
     region.coor = strsplit(files[i], split = "_")[[1]]
@@ -653,92 +637,7 @@ extract.all.repeats = function(temp.folder = "", assemblyName = "")
   write.csv(x = repeats.all, file = paste(assemblyName, "/all.repeats.from.", assemblyName, ".csv", sep = ""), row.names = FALSE)
 }
 
-extract.kmers = function(fasta.sequence, kmer.size)
-{
-  fasta.sequence = strsplit(fasta.sequence, split = "")[[1]]
-  size = length(fasta.sequence)
-  fasta.sequence = c(fasta.sequence, fasta.sequence)
-  kmers = vector(mode = "character", length = size)
-  for(i in 1 : size)
-  {
-    kmers[i] = paste(fasta.sequence[i : (i + kmer.size - 1)], collapse = "")
-  }
-  return(kmers)
-}
 
-
-kmer.compare = function(repA, repB, kmer.size = 8)
-{
-  if(is.na(repA))
-  {
-    print("repA not a character!")
-    return(0)
-  }
-  if(is.na(repB))
-  {
-    print("repB not a character!")
-    return(0)
-  }
-  repAkmers = extract.kmers(repA, kmer.size)
-  repBkmers = extract.kmers(repB, kmer.size)
-  common = ( length(which(repBkmers %in% repAkmers)) + length(which(repAkmers %in% repBkmers)) ) / 2
-  if(is.na(common))
-  {
-    return(0)
-  }
-  d = 100 * common/ave(nchar(repA), nchar(repB))
-  if(is.na(d))
-  {
-    return(0)
-  }
-  return(d)
-}
-
-
-identify.and.extract.repeats = function(temp.folder = "", genome.dir = "", genome = "", sequence.templates, kmer = 10, window = 1000, threshold = 10, filter.small = 1000, reach = 200, 
-                                        filter.smaller.N = 3, plot.regions.scores = FALSE, random.Nmer.tests = 3, only.Chr1_5 = FALSE, single.pngs = TRUE, debug.text = FALSE)
-{
-  print(paste("Start file ", genome, sep = ""))
-  fasta = paste(genome.dir, genome, sep ="/")
-  assemblyName = strsplit(genome, split = "[.]")[[1]]
-  assemblyName = str_c(assemblyName[1:(length(assemblyName) - 1)], collapse = ".")
-  a = Sys.time()
-  frame1 = identify.repetitive.regions(fastaDirectory = fasta, kmer = kmer, window = window, threshold = threshold, filter.small = filter.small)
-  frame1$full.name = assemblyName
-  if(debug.text) {print("frame1 done")}
-  frame2 = closest.identical.kmer.distances(regions.data.frame = frame1, kmer = kmer, reach = reach, filter.smaller.N = filter.smaller.N, plot = plot.regions.scores)
-  if(debug.text) {print("frame2 done")}
-  if(skip.mafft) 
-  {
-    frame7 = frame2[,-c(6)]
-    write.csv(x = frame7, file = paste(temp.folder, "/", assemblyName, "/Summary.of.repetitive.regions.", assemblyName, ".csv", sep = ""), quote = FALSE)
-    remove(frame1,frame2,frame7,fasta)
-    b = difftime(Sys.time(), a, units = "hours")
-    print(paste("Genome ", assemblyName, " finished in ", round(b, digits = 3), " hours", sep = ""))
-    remove(assemblyName,a,b)
-  } else {
-    frame3 = test.random.Nmers(regions.data.frame = frame2, tests = random.Nmer.tests, assemblyName = assemblyName, temp.folder = temp.folder)
-    if(!is.na(sequence.templates))
-    {
-      frame3.5 = shift.primary.consensus(regions.data.frame = frame3, sequence.template = sequence.templates)
-      frame4 = generate.secondary.consensus(regions.data.frame = frame3.5, assemblyName = assemblyName, temp.folder = temp.folder)
-      remove(frame3)
-    } else{
-      frame4 = generate.secondary.consensus(regions.data.frame = frame3, assemblyName = assemblyName, temp.folder = temp.folder)
-    }
-    
-    frame7 = frame4[,-c(6)]
-    write.csv(x = frame7, file = paste(temp.folder, "/", assemblyName, "/Summary.of.repetitive.regions.", assemblyName, ".csv", sep = ""), quote = FALSE)
-    
-    draw.scaffold.repeat.plots(temp.folder = temp.folder, assemblyName = assemblyName,fastaDirectory = fasta,only.Chr1_5 = only.Chr1_5,single.pngs = single.pngs)
-    extract.all.repeats(temp.folder = temp.folder, assemblyName = assemblyName)
-    if(debug.text) {print("extracted repeats done")}
-    b = difftime(Sys.time(), a, units = "hours")
-    remove(frame1,frame2,frame3,frame4,frame7,fasta)
-    print(paste("Genome ", assemblyName, " finished in ", round(b, digits = 3), " hours", sep = ""))
-    remove(assemblyName,a,b)
-  }
-}
 
 
 #####
@@ -753,46 +652,115 @@ if(test.sequence == TRUE)
   {
     outputs.directory = "~/Arabidopsis/output" # output folder. example "~/Arabidopsis/output"
     genomes.directory = "~/Arabidopsis/genomes" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
+    sequence.templates = "~/Arabidopsis/sequence.template.csv"
   } else if(Sys.info()['sysname'] == "Windows")
   {
     outputs.directory = "C:/Users/wlodz/Desktop/RepeatIdentifyTests/output" # output folder. example "~/Arabidopsis/output"
     genomes.directory = "C:/Users/wlodz/Desktop/RepeatIdentifyTests/genomes" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
+    sequence.templates = "C:/Users/wlodz/Desktop/RepeatIdentifyTests/sequence.template.csv"
   }
 }
+if(!is.na(sequence.templates))
+{
+  sequence.templates = read.csv(file = sequence.templates)
+  sequence.templates = sequence.templates[sequence.templates$group == "ath",]
+}
+
 
 if(Sys.info()['sysname'] == "Linux")
 {
   genome.names = system(paste("cd ", genomes.directory, " && ls -d *.fa*", sep = ""), intern = TRUE)
+  if(set.no.of.cores != 0)
+  {
+    registerDoParallel(cores = set.no.of.cores)
+  } else {
+    registerDoParallel(cores = length(genome.names))
+  }
 } else if(Sys.info()['sysname'] == "Windows")
 {
   genome.names = shell(paste("cd ", genomes.directory, " && dir /b | findstr .fa", sep = ""), intern = TRUE)
 }
-if(set.no.of.cores != 0)
+
+sequences = data.frame(index = numeric(), assembly.name = character(), fasta.name = character(), sequence = character())
+index = 1
+for(i in 1 : length(genome.names))
 {
-  registerDoParallel(cores = set.no.of.cores)
-} else {
-  registerDoParallel(cores = length(genome.names))
+  print(paste("reading file ", genome.names[i], sep = ""))
+  fasta = read.fasta(file = paste(genomes.directory, genome.names[i], sep = "/"), as.string = TRUE)
+  for(j in 1 : length(fasta))
+  {
+    print(paste("reading sequence in ", genome.names[i], " ", j, " out of ", length(fasta), sep = ""))
+    sequences = rbind(sequences, data.frame(index = index, assembly.name = genome.names[i], fasta.name = names(fasta)[j], sequence = toupper(fasta[[i]][j])))
+    index = index + 1
+  }
 }
 
+#####
 if(Sys.info()['sysname'] == "Linux")
 {
   print("Currently registered parallel backend name, version and cores")
   print(getDoParName())
   print(getDoParVersion())
   print(getDoParWorkers())
-  print("lets go")
   foreach(i = 1 : length(genome.names)) %dopar% {
-    identify.and.extract.repeats(temp.folder = outputs.directory, genome.dir = genomes.directory, genome = genome.names[i], 
-                                 sequence.templates = sequence.templates, kmer = set.kmer, threshold = set.threshold, reach = set.max.repeat.size, debug.text = FALSE)
+    identified = RepeatIdentifier(DNA.sequence = sequences$sequence[i], assemblyName = sequences$assembly.name[i], fasta.name = sequences$fasta.name[i], 
+                                  kmer = set.kmer, window = 1000, threshold = set.threshold, mask.small.regions = 0, mask.small.repeats = 0,
+                                  max.repeat.size = set.max.repeat.size, filter.smaller.N = 0,
+                                  tests = 5, temp.folder = outputs.directory, sequence.template = sequence.templates)
+    identified$chr.no = i
+    write.csv(x = identified, file = paste(outputs.directory, "/", genome.names[i], "/Chromosome.", sequences$fasta.name[i], ".csv", sep = ""), quote = FALSE)
   } 
 } else if(Sys.info()['sysname'] == "Windows")
 {
-  
-  genome.names = shell(paste("cd ", genomes.directory, " && dir /b | findstr .fa", sep = ""), intern = TRUE)
-  for(i in 1 : length(genome.names)){
-    identify.and.extract.repeats(temp.folder = outputs.directory, genome.dir = genomes.directory, genome = genome.names[i], 
-                                 sequence.templates = sequence.templates, kmer = set.kmer, threshold = set.threshold, reach = set.max.repeat.size, debug.text = FALSE)
+  for(i in 1 : nrow(sequences)){
+    identified = RepeatIdentifier(DNA.sequence = sequences$sequence[i], assemblyName = sequences$assembly.name[i], fasta.name = sequences$fasta.name[i], 
+                                  kmer = set.kmer, window = 1000, threshold = set.threshold, mask.small.regions = 0, mask.small.repeats = 0,
+                                  max.repeat.size = set.max.repeat.size, filter.smaller.N = 0,
+                                  tests = 5, temp.folder = outputs.directory, sequence.template = sequence.templates)
+    identified$chr.no = i
+    write.csv(x = identified, file = paste(outputs.directory, "/", genome.names[i], "/Chromosome.", sequences$fasta.name[i], ".csv", sep = ""), quote = FALSE)
   } 
 }
-#####
+
+for(i in 1 : length(unique(sequences$assembly.name[i])))
+{
+  if(Sys.info()['sysname'] == "Linux")
+  {
+    repeat.files = system(paste("cd ", outputs.directory, "/", genome.names[i], " && ls -d Chromosome.*", sep = ""), intern = TRUE)
+    
+    regions = NULL
+    for(j in 1 : length(repeat.files))
+    {
+      regions = rbind(regions, read.csv(file = paste(outputs.directory, "/", genome.names[i], "/", repeat.files[j], sep = "")))
+    }
+    regions = regions[,-c(1,2)]
+    write.csv(x = regions, file = paste(outputs.directory, "/", genome.names[i], "/Summary.of.repetitive.regions.", genome.names[i], ".csv", sep = ""), quote = FALSE)
+    
+    draw.scaffold.repeat.plots(temp.folder = outputs.directory, assemblyName = sequences$assembly.name[i], 
+                               fastaDirectory = paste(genomes.directory, "/", sequences$assembly.name[i], sep = ""), only.Chr1_5 = FALSE, single.pngs = TRUE)
+    
+    extract.all.repeats(temp.folder = outputs.directory, assemblyName = sequences$assembly.name[i])
+  } else if(Sys.info()['sysname'] == "Windows")
+  {
+    repeat.files = shell(paste("cd ", outputs.directory, "/", genome.names[i], " && dir /b | findstr Chromosome.", sep = ""), intern = TRUE)
+    
+    regions = NULL
+    for(j in 1 : length(repeat.files))
+    {
+      regions = rbind(regions, read.csv(file = paste(outputs.directory, "/", genome.names[i], "/", repeat.files[j], sep = "")))
+    }
+    regions = regions[,-c(1,2)]
+    write.csv(x = regions, file = paste(outputs.directory, "/", genome.names[i], "/Summary.of.repetitive.regions.", genome.names[i], ".csv", sep = ""), quote = FALSE)
+    
+    draw.scaffold.repeat.plots(temp.folder = outputs.directory, assemblyName = sequences$assembly.name[i], 
+                               fastaDirectory = paste(genomes.directory, "/", sequences$assembly.name[i], sep = ""), only.Chr1_5 = FALSE, single.pngs = TRUE)
+    
+    extract.all.repeats(temp.folder = outputs.directory, assemblyName = sequences$assembly.name[i])
+  }
+}
+
+
+
+
+
 
