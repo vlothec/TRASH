@@ -35,7 +35,7 @@ skip.mafft = FALSE
 
 
 
-test.sequence = FALSE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
+test.sequence = TRUE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
 ###########
 #Functions#
 ###########
@@ -690,7 +690,7 @@ for(i in 1 : length(genome.names))
   for(j in 1 : length(fasta))
   {
     print(paste("reading sequence in ", genome.names[i], " ", j, " out of ", length(fasta), sep = ""))
-    sequences = rbind(sequences, data.frame(index = index, assembly.name = genome.names[i], fasta.name = names(fasta)[j], sequence = toupper(fasta[[i]][j])))
+    sequences = rbind(sequences, data.frame(index = index, assembly.name = genome.names[i], fasta.name = names(fasta)[j], sequence = toupper(fasta[[j]][1])))
     index = index + 1
   }
 }
