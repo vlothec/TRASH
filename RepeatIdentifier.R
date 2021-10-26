@@ -28,12 +28,6 @@ sequence.templates = NA # path to a csv file used to match identified repeats to
 ##seq,name,length,group
 ##AGTATA,CEN180,180,ath
 
-#MAFFT#
-#without mafft (https://mafft.cbrc.jp/alignment/software/) installed in the environment only regions containing repeats will be identified
-#tested with mafft-7.475-win64-signed
-skip.mafft = FALSE
-
-
 
 test.sequence = TRUE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
 ###########
