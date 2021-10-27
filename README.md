@@ -1,5 +1,5 @@
 # RepeatIdentifier
-R script to identify tandem repeats (satellites)
+R script to identify and extract tandem repeats
 
 Local **kmer** counting finds regions that are repetitive. Windows (1kb by default) are scored based on proportion of repeated kmers to their size. **Threshold** is a score above which windows are considered to contain repeats. Periodicity of repeats is established and **MAFFT** is used to iterate over candidate representative sequences to find a consensus. 
 
