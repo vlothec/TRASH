@@ -688,7 +688,7 @@ if(test.sequence == TRUE)
 if(!is.na(sequence.templates))
 {
   sequence.templates = read.csv(file = sequence.templates)
-  sequence.templates = sequence.templates[sequence.templates$group == "ath",]
+  #sequence.templates = sequence.templates[sequence.templates$group == "ath",]
 }
 
 
