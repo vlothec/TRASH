@@ -260,17 +260,10 @@ RepeatIdentifier = function(DNA.sequence = "", assemblyName = "", fasta.name = "
       if(ncol(winner) == 5)
       {
         write.fasta(file.out = paste(assemblyName, "/frame2/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
-<<<<<<< HEAD
                     names = paste(winner$start, winner$end, sep = "_"), sequences = str_split(winner[,4], pattern = ""), open = "w", as.string = FALSE)
       } else if(ncol(winner) == 4){
         write.fasta(file.out = paste(assemblyName, "/", "/frame2/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
                     names = paste(winner$start, winner$end, sep = "_"), sequences = str_split(winner$x, pattern = ""), open = "w", as.string = FALSE)
-=======
-                    names = paste(winner$start, winner$end, sep = "_"), sequences = str_split(winner[ii,4], pattern = ""), open = "w", as.string = FALSE)
-      } else if(ncol(winner) == 4){
-        write.fasta(file.out = paste(assemblyName, "/", "/frame2/", i, "_", "pre.extract", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".fasta", sep = ""), 
-                    names = paste(winner$start[ii], winner$end[ii], sep = "_"), sequences = str_split(winner$x, pattern = ""), open = "w", as.string = FALSE)
->>>>>>> d78e23124621c7713f6ccbe2e9b0be7d42c83099
       }
       
       
@@ -744,11 +737,7 @@ if(Sys.info()['sysname'] == "Linux")
     identified = RepeatIdentifier(DNA.sequence = sequences$sequence[i], assemblyName = sequences$assembly.name[i], fasta.name = sequences$fasta.name[i], 
                                   kmer = set.kmer, window = 1000, threshold = set.threshold, mask.small.regions = 1500, mask.small.repeats = 4,
                                   max.repeat.size = set.max.repeat.size,
-<<<<<<< HEAD
                                   tests = 3, temp.folder = outputs.directory, sequence.template = sequence.templates)
-=======
-                                  tests = 2, temp.folder = outputs.directory, sequence.template = sequence.templates)
->>>>>>> d78e23124621c7713f6ccbe2e9b0be7d42c83099
     if((identified != 0)[1])
     {
       print(paste("Assembly ", sequences$assembly.name[i], " chromosome ", sequences$fasta.name[i], " finished", sep = ""))
@@ -763,11 +752,7 @@ if(Sys.info()['sysname'] == "Linux")
     identified = RepeatIdentifier(DNA.sequence = sequences$sequence[i], assemblyName = sequences$assembly.name[i], fasta.name = sequences$fasta.name[i], 
                                   kmer = set.kmer, window = 1000, threshold = set.threshold, mask.small.regions = 1500, mask.small.repeats = 4,
                                   max.repeat.size = set.max.repeat.size,
-<<<<<<< HEAD
                                   tests = 3, temp.folder = outputs.directory, sequence.template = sequence.templates)
-=======
-                                  tests = 2, temp.folder = outputs.directory, sequence.template = sequence.templates)
->>>>>>> d78e23124621c7713f6ccbe2e9b0be7d42c83099
     if((identified != 0)[1])
     {
       print(paste("Assembly ", sequences$assembly.name[i], " chromosome ", sequences$fasta.name[i], " finished", sep = ""))
