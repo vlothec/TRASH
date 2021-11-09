@@ -14,22 +14,23 @@ library(doParallel)
 #Multithreading#
 #it's based on amount of .fasta files provided as an input, to use more CPUs when running a single genome, it can be split into chromosomes
 #if left at 0, R will try to use the same amount or cores as the amount of sequence files in the input folder
-set.no.of.cores = 0 
+set.no.of.cores = 47 
 
 #Run settings#
+read.only.X.chromosomes = 5 #if 0, all fasta file sequences will be read, if any other number, those first sequences will be read (for example to run only chromosomes and not contigs)
 set.kmer = 12 # kmer size used for initial identification of repetitive regions
 set.threshold = 10 # window repetitiveness score (0-100) threshold
 set.max.repeat.size = 500 # max size of repeats to be identified
-outputs.directory = "" # output folder. example "~/Arabidopsis/output"
-genomes.directory = "" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
-sequence.templates = NA # path to a csv file used to match identified repeats to templates so they are globally in the same frame (same start position), set as NA to skip
+outputs.directory = "~/AllArabidopsisThaliana/output2" # output folder. example "~/Arabidopsis/output"
+genomes.directory = "~/assemblies/Arabidopsis_thaliana" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
+sequence.templates = "~/sequence.template.csv" # path to a csv file used to match identified repeats to templates so they are globally in the same frame (same start position), set as NA to skip
 ##example: sequence.templates = "~/sequence.template.csv"
 ##format: 
 ##seq,name,length,group
 ##AGTATA,CEN180,180,ath
 
 
-test.sequence = FALSE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
+test.sequence = TRUE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
 ###########
 #Functions#
 ###########
@@ -203,6 +204,8 @@ RepeatIdentifier = function(DNA.sequence = "", assemblyName = "", fasta.name = "
     dir.create(paste(temp.folder, "/", assemblyName, "/frame2", sep =""))
   }
   
+  write.csv(regions.data.frame, file = paste(assemblyName, "/frame2/Pre_Primary_regions_", assemblyName, "_", fasta.name, ".csv", sep = ""))
+  
   for(i in 1 : nrow(regions.data.frame))
   {
     print(paste("testing random N samples from region ", i, "/", nrow(regions.data.frame), " window size: ", regions.data.frame$end[i] - regions.data.frame$start[i], sep = ""))
@@ -301,7 +304,7 @@ RepeatIdentifier = function(DNA.sequence = "", assemblyName = "", fasta.name = "
   
   print(paste("finished test random Nmers of ", assemblyName, ": ", fasta.name, sep = ""))
   
-  write.csv(regions.data.frame, file = paste(assemblyName, "/Pre_shift_regions_", assemblyName, "_", fasta.name, ".csv", sep = ""))
+  write.csv(regions.data.frame, file = paste(assemblyName, "/frame2/Pre_shift_regions_", assemblyName, "_", fasta.name, ".csv", sep = ""))
   # 3.5 Shift the primary consensus sequences to match a given sequence, only those regions with N within a given range
   regions.data.frame$class = ""
   if(!is.na(sequence.template)[1])
@@ -671,6 +674,12 @@ extract.all.repeats = function(temp.folder = "", assemblyName = "")
 #RUN#
 #####
 
+
+if(!is.na(sequence.templates))
+{
+  sequence.templates = read.csv(file = sequence.templates)
+  sequence.templates = sequence.templates[sequence.templates$group == "ath",]
+}
 if(test.sequence == TRUE)
 {
   if(Sys.info()['sysname'] == "Linux")
@@ -678,19 +687,15 @@ if(test.sequence == TRUE)
     outputs.directory = "~/Arabidopsis/output" 
     genomes.directory = "~/Arabidopsis/genomes" 
     #sequence.templates = "~/Arabidopsis/sequence.template.csv"
+    #sequence.templates = sequence.templates[sequence.templates$group == "ath",]
   } else if(Sys.info()['sysname'] == "Windows")
   {
     outputs.directory = "C:/Users/wlodz/Desktop/RepeatIdentifyTests/output" 
     genomes.directory = "C:/Users/wlodz/Desktop/RepeatIdentifyTests/genomes" 
     #sequence.templates = "C:/Users/wlodz/Desktop/RepeatIdentifyTests/sequence.template.csv"
+    #sequence.templates = sequence.templates[sequence.templates$group == "ath",]
   }
 }
-if(!is.na(sequence.templates))
-{
-  sequence.templates = read.csv(file = sequence.templates)
-  #sequence.templates = sequence.templates[sequence.templates$group == "ath",]
-}
-
 
 if(Sys.info()['sysname'] == "Linux")
 {
@@ -702,11 +707,27 @@ if(Sys.info()['sysname'] == "Linux")
 
 sequences = data.frame(index = numeric(), assembly.name = character(), fasta.name = character(), sequence = character())
 index = 1
-for(i in 1 : length(genome.names))
+
+for(i in 1 : length(genome.names)) 
 {
   print(paste("reading file ", genome.names[i], sep = ""))
   fasta = read.fasta(file = paste(genomes.directory, genome.names[i], sep = "/"), as.string = TRUE)
-  for(j in 1 : length(fasta))
+  
+  if(read.only.X.chromosomes != 0)  #apply how many sequences in every fasta file should be read in
+  {
+    if(length(fasta) < read.only.X.chromosomes)
+    {
+      read.no = length(fasta)
+    } else
+    {
+      read.no = read.only.X.chromosomes
+    }
+  } else
+  {
+    read.no = length(fasta)
+  }
+  
+  for(j in 1 : read.no)
   {
     print(paste("reading sequence in ", genome.names[i], " ", j, " out of ", length(fasta), sep = ""))
     sequences = rbind(sequences, data.frame(index = index, assembly.name = genome.names[i], fasta.name = names(fasta)[j], sequence = toupper(fasta[[j]][1])))
@@ -738,6 +759,7 @@ if(Sys.info()['sysname'] == "Linux")
                                   kmer = set.kmer, window = 1000, threshold = set.threshold, mask.small.regions = 1500, mask.small.repeats = 4,
                                   max.repeat.size = set.max.repeat.size,
                                   tests = 3, temp.folder = outputs.directory, sequence.template = sequence.templates)
+    gc()
     if((identified != 0)[1])
     {
       print(paste("Assembly ", sequences$assembly.name[i], " chromosome ", sequences$fasta.name[i], " finished", sep = ""))
@@ -753,6 +775,7 @@ if(Sys.info()['sysname'] == "Linux")
                                   kmer = set.kmer, window = 1000, threshold = set.threshold, mask.small.regions = 1500, mask.small.repeats = 4,
                                   max.repeat.size = set.max.repeat.size,
                                   tests = 3, temp.folder = outputs.directory, sequence.template = sequence.templates)
+    gc()
     if((identified != 0)[1])
     {
       print(paste("Assembly ", sequences$assembly.name[i], " chromosome ", sequences$fasta.name[i], " finished", sep = ""))
