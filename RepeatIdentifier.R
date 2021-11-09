@@ -30,7 +30,7 @@ sequence.templates = "~/sequence.template.csv" # path to a csv file used to matc
 ##AGTATA,CEN180,180,ath
 
 
-test.sequence = TRUE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
+test.sequence = FALSE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
 ###########
 #Functions#
 ###########
@@ -679,6 +679,7 @@ if(!is.na(sequence.templates))
 {
   sequence.templates = read.csv(file = sequence.templates)
   sequence.templates = sequence.templates[sequence.templates$group == "ath",]
+  sequence.templates = sequence.templates[sequence.templates$name == "cen180",]
 }
 if(test.sequence == TRUE)
 {
