@@ -26,7 +26,7 @@ window.size = 1000 # how far apart kmers can be in the initial search for exact 
 
 outputs.directory = "~/AllArabidopsisThaliana/output" # output folder. example "~/Arabidopsis/output"
 genomes.directory = "~/assemblies/Arabidopsis_thaliana" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
-sequence.templates = "~/sequence.template.csv" # path to a csv file used to match identified repeats to templates so they are globally in the same frame (same start position), set as NA to skip
+sequence.templates = NA # path to a csv file used to match identified repeats to templates so they are globally in the same frame (same start position), set as NA to skip
 ##example: sequence.templates = "~/sequence.template.csv"
 ##format: 
 ##seq,name,length,group
@@ -724,7 +724,7 @@ extract.all.repeats = function(temp.folder = "", assemblyName = "")
 if(!is.na(sequence.templates))
 {
   sequence.templates = read.csv(file = sequence.templates)
-  sequence.templates = sequence.templates[sequence.templates$group == "ath",]
+  #sequence.templates = sequence.templates[sequence.templates$group == "ath",]
   #sequence.templates = sequence.templates[sequence.templates$name == "cen180",]
 }
 if(test.sequence == TRUE)
