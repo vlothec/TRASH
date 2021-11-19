@@ -13,19 +13,19 @@ library(doParallel)
 #Multithreading#
 #it's based on amount of .fasta files provided as an input, to use more CPUs when running a single genome, it can be split into chromosomes
 #if left at 0, R will try to use the same amount or cores as the amount of sequence files in the input folder
-set.no.of.cores = 47 
+set.no.of.cores = 0 
 
 #Run settings#
 read.only.X.chromosomes = 5 #if 0, all fasta file sequences will be read, if any other number, those first sequences will be read (for example to run only chromosomes and not contigs)
 set.kmer = 12 # kmer size used for initial identification of repetitive regions
 set.threshold = 10 # window repetitiveness score (0-100) threshold
-set.max.repeat.size = 500 # max size of repeats to be identified
+set.max.repeat.size = 1000 # max size of repeats to be identified
 filter.small.regions = 1500 # repetitive windows smaller than this size will be removed (helps getting rid of regions with short duplications)
 filter.small.repeats = 4 # repetitive windows where dominant kmer distance is lower than this value will be removed (for example AT dinucleotide repeats)
-window.size = 1000 # how far apart kmers can be in the initial search for exact matches. No repeats larger than this will be identified
+window.size = 1500 # how far apart kmers can be in the initial search for exact matches. No repeats larger than this will be identified
 
-outputs.directory = "~/AllArabidopsisThaliana/output" # output folder. example "~/Arabidopsis/output"
-genomes.directory = "~/assemblies/Arabidopsis_thaliana" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
+outputs.directory = "~/AllArabidopsisThaliana/outRun1" # output folder. example "~/Arabidopsis/output"
+genomes.directory = "~/assemblies/run1" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
 sequence.templates = NA # path to a csv file used to match identified repeats to templates so they are globally in the same frame (same start position), set as NA to skip
 ##example: sequence.templates = "~/sequence.template.csv"
 ##format: 
@@ -34,6 +34,16 @@ sequence.templates = NA # path to a csv file used to match identified repeats to
 
 
 test.sequence = FALSE # keep FALSE, otherwise outputs and genomes directory paths will be overwritten
+
+
+if(!is.na(sequence.templates)) # modify which templates should be used (if not needed, leave the first line only)
+{
+  sequence.templates = read.csv(file = sequence.templates)
+  #sequence.templates = sequence.templates[sequence.templates$group == "ath",]
+  #sequence.templates = sequence.templates[sequence.templates$name == "cen180",]
+}
+
+
 ###########
 #Functions#
 ###########
@@ -335,6 +345,7 @@ RepeatIdentifier = function(DNA.sequence = "", assemblyName = "", fasta.name = "
           check.seq = regions.data.frame$consensus.primary[i]
           if((nchar(check.seq) > (min(sequence.template$length)-10)) & (nchar(check.seq) < (max(sequence.template$length)+10)))
           {
+            highest = 0
             scores = 0
             for(ii in 1 : nrow(sequence.template))
             {
@@ -354,41 +365,43 @@ RepeatIdentifier = function(DNA.sequence = "", assemblyName = "", fasta.name = "
                 }
               }
             }
-            
-            seq.len = nchar(check.seq)
-            #create a df of all possible shifts and a column for their scores
-            shifts = data.frame(seq = vector(mode = "character", length = (seq.len * 2)), score = vector(mode = "numeric", length = (seq.len * 2)))
-            #split the sequence to make it easier to handle
-            seq.to.split.plus = strsplit(check.seq, split = "")[[1]]
-            seq.to.split.revcomp = strsplit(revCompString(check.seq), split = "")[[1]]
-            #handle problematic first and last cases
-            shifts$seq[1] = paste(seq.to.split.plus, collapse = "")
-            shifts$seq[(seq.len)] = paste(c(seq.to.split.plus[seq.len], seq.to.split.plus[1 : (seq.len - 1)]), collapse = "")
-            shifts$seq[seq.len  + 1] = paste(seq.to.split.revcomp, collapse = "")
-            shifts$seq[(seq.len * 2)] = paste(c(seq.to.split.revcomp[seq.len], seq.to.split.revcomp[1 : (seq.len - 1)]), collapse = "")
-            #do forward strand
-            for(ii in 2 : (seq.len - 1))
+            if(highest != 0)
             {
-              shifts$seq[ii] = paste(c(seq.to.split.plus[ii : seq.len], seq.to.split.plus[1 : (ii - 1)]), collapse = "")
-            }
-            #do reverse strand
-            for(ii in 2 : (seq.len - 1))
-            {
-              shifts$seq[ii + seq.len] = paste(c(seq.to.split.revcomp[ii : seq.len], seq.to.split.revcomp[1 : (ii - 1)]), collapse = "")
-            }
-            #align sequence.template to the shifts
-            for(ii in 1 : nrow(shifts))
-            {
-              if(ii%%100 == 0)
+              seq.len = nchar(check.seq)
+              #create a df of all possible shifts and a column for their scores
+              shifts = data.frame(seq = vector(mode = "character", length = (seq.len * 2)), score = vector(mode = "numeric", length = (seq.len * 2)))
+              #split the sequence to make it easier to handle
+              seq.to.split.plus = strsplit(check.seq, split = "")[[1]]
+              seq.to.split.revcomp = strsplit(revCompString(check.seq), split = "")[[1]]
+              #handle problematic first and last cases
+              shifts$seq[1] = paste(seq.to.split.plus, collapse = "")
+              shifts$seq[(seq.len)] = paste(c(seq.to.split.plus[seq.len], seq.to.split.plus[1 : (seq.len - 1)]), collapse = "")
+              shifts$seq[seq.len  + 1] = paste(seq.to.split.revcomp, collapse = "")
+              shifts$seq[(seq.len * 2)] = paste(c(seq.to.split.revcomp[seq.len], seq.to.split.revcomp[1 : (seq.len - 1)]), collapse = "")
+              #do forward strand
+              for(ii in 2 : (seq.len - 1))
               {
-                write(paste("Aligning shfit ", ii, " out of ", nrow(shifts), " from region ", i, paste = ""), file = paste(assemblyName, "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+                shifts$seq[ii] = paste(c(seq.to.split.plus[ii : seq.len], seq.to.split.plus[1 : (ii - 1)]), collapse = "")
               }
-              #TODO choose an alignment method that gives a precise score and align and save the score in the table
-              shifts$score[ii] =  pairwiseAlignment(pattern = shifts$seq[ii], subject = sequence.template$seq[highest], type = "global", scoreOnly = TRUE)
+              #do reverse strand
+              for(ii in 2 : (seq.len - 1))
+              {
+                shifts$seq[ii + seq.len] = paste(c(seq.to.split.revcomp[ii : seq.len], seq.to.split.revcomp[1 : (ii - 1)]), collapse = "")
+              }
+              #align sequence.template to the shifts
+              for(ii in 1 : nrow(shifts))
+              {
+                if(ii%%100 == 0)
+                {
+                  write(paste("Aligning shfit ", ii, " out of ", nrow(shifts), " from region ", i, paste = ""), file = paste(assemblyName, "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+                }
+                #TODO choose an alignment method that gives a precise score and align and save the score in the table
+                shifts$score[ii] =  pairwiseAlignment(pattern = shifts$seq[ii], subject = sequence.template$seq[highest], type = "global", scoreOnly = TRUE)
+              }
+              #return the highest score shift as a primary.shifted[i]
+              regions.data.frame$consensus.primary[i] = shifts$seq[which.max(shifts$score)]
+              regions.data.frame$class[i] = sequence.template$name[highest]
             }
-            #return the highest score shift as a primary.shifted[i]
-            regions.data.frame$consensus.primary[i] = shifts$seq[which.max(shifts$score)]
-            regions.data.frame$class[i] = sequence.template$name[highest]
           }
         }
       }
@@ -721,12 +734,7 @@ extract.all.repeats = function(temp.folder = "", assemblyName = "")
 #####
 
 
-if(!is.na(sequence.templates))
-{
-  sequence.templates = read.csv(file = sequence.templates)
-  #sequence.templates = sequence.templates[sequence.templates$group == "ath",]
-  #sequence.templates = sequence.templates[sequence.templates$name == "cen180",]
-}
+
 if(test.sequence == TRUE)
 {
   if(Sys.info()['sysname'] == "Linux")
@@ -745,14 +753,18 @@ if(test.sequence == TRUE)
   }
 }
 
+setwd(genomes.directory)
+
 if(Sys.info()['sysname'] == "Linux")
 {
-  genome.names = system(paste("cd ", genomes.directory, " & ls -d *.fa*", sep = ""), intern = TRUE)
+  system(paste("cd ", genomes.directory, sep = ""), intern = TRUE)
+  genome.names = system("ls -d *.fa*", intern = TRUE)
+  
 } else if(Sys.info()['sysname'] == "Windows")
 {
   genome.names = shell(paste("cd ", genomes.directory, " & dir /b | findstr .fa", sep = ""), intern = TRUE)
 }
-
+Sys.sleep(time = 5)
 sequences = data.frame(index = numeric(), assembly.name = character(), fasta.name = character(), sequence = character())
 index = 1
 
@@ -838,7 +850,8 @@ for(i in 1 : length(assemblies))
   print(i)
   if(Sys.info()['sysname'] == "Linux")
   {
-    repeat.files = system(paste("cd ", outputs.directory, "/", genome.names[i], " & ls -d Chromosome.*", sep = ""), intern = TRUE)
+    setwd(paste(outputs.directory, genome.names[i], sep = "/"))
+    repeat.files = system(paste("ls -d Chromosome.*", sep = ""), intern = TRUE)
     print(repeat.files)
     regions = NULL
     for(j in 1 : length(repeat.files))
@@ -857,7 +870,8 @@ for(i in 1 : length(assemblies))
     print(paste("all done for this genome", assemblies[i], sep = ""))
   } else if(Sys.info()['sysname'] == "Windows")
   {
-    repeat.files = shell(paste("cd ", outputs.directory, "/", genome.names[i], " & dir /b | findstr Chromosome.", sep = ""), intern = TRUE)
+    setwd(paste(outputs.directory, genome.names[i], sep = "/"))
+    repeat.files = shell(paste("dir /b | findstr Chromosome.", sep = ""), intern = TRUE)
     
     regions = NULL
     for(j in 1 : length(repeat.files))
