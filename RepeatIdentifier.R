@@ -13,10 +13,10 @@ library(doParallel)
 #Multithreading#
 #it's based on amount of .fasta files provided as an input, to use more CPUs when running a single genome, it can be split into chromosomes
 #if left at 0, R will try to use the same amount or cores as the amount of sequence files in the input folder
-set.no.of.cores = 8 
+set.no.of.cores = 0
 
 #Run settings#
-read.only.X.chromosomes = 5 #if 0, all fasta file sequences will be read, if any other number, those first sequences will be read (for example to run only chromosomes and not contigs)
+read.only.X.chromosomes = 10 #if 0, all fasta file sequences will be read, if any other number, those first sequences will be read (for example to run only chromosomes and not contigs)
 set.kmer = 12 # kmer size used for initial identification of repetitive regions
 set.threshold = 10 # window repetitiveness score (0-100) threshold
 set.max.repeat.size = 1000 # max size of repeats to be identified
@@ -24,8 +24,8 @@ filter.small.regions = 1500 # repetitive windows smaller than this size will be 
 filter.small.repeats = 4 # repetitive windows where dominant kmer distance is lower than this value will be removed (for example AT dinucleotide repeats)
 window.size = 1500 # how far apart kmers can be in the initial search for exact matches. No repeats larger than this will be identified
 
-outputs.directory = "~/RepeatIdentification/aLyr" # output folder. example "~/Arabidopsis/output"
-genomes.directory = "~/assemblies/Arabidopsis_lyrata" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
+outputs.directory = "~/RepeatIdentification/aTha1" # output folder. example "~/Arabidopsis/output"
+genomes.directory = "~/assemblies/aTha1" # folder with .fasta inputs. example "~/Arabidopsis/genomes"
 sequence.templates = "~/sequence.template.csv" # path to a csv file used to match identified repeats to templates so they are globally in the same frame (same start position), set as NA to skip
 ##example: sequence.templates = "~/sequence.template.csv"
 ##format: 
@@ -39,7 +39,7 @@ test.sequence = FALSE # keep FALSE, otherwise outputs and genomes directory path
 if(!is.na(sequence.templates)) # modify which templates should be used
 {
   sequence.templates = read.csv(file = sequence.templates)
-  #sequence.templates = sequence.templates[sequence.templates$group == "ath",]
+  sequence.templates = sequence.templates[sequence.templates$group == "ath",]
   #sequence.templates = sequence.templates[sequence.templates$name == "cen180",]
 }
 
