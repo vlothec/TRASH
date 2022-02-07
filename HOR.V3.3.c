@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-// TODO: change alilength calculation to let fasta alignments that are wrapped to be used as input (line 65)
 char **allAlignedSeqs;
 int alilength = 0;
 int threshold;          //less OR equal than threshold variants allowed
