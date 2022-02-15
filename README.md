@@ -6,7 +6,7 @@ Second part of the script, UNFINISHED, takes .csv file with repeats and finds hi
 C script required for the HOR part
 
 # TRASH: Tandem Repeat Annotation and Structural Hierarchy
-R script to identify and extract tandem repeats
+identify and extract tandem repeats and investigate their higher order structure 
 
 Local **kmer** counting finds regions that are repetitive. Windows (1kb by default) are scored based on proportion of repeated kmers to their size. **Threshold** is a score above which windows are considered to contain repeats. Periodicity of repeats is established and **MAFFT** is used to iterate over candidate representative sequences to find a consensus. 
 
