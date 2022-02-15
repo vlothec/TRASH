@@ -1,3 +1,10 @@
+## RepeatIdentifier.R
+First part of the script, using a fasta file input finds tandemly arranged repeats
+## HOR.wrapper.single.R
+Second part of the script, UNFINISHED, takes .csv file with repeats and finds higher order repeats
+## HOR.V3.3.c 
+C script required for the HOR part
+
 # TRASH: Tandem Repeat Annotation and Structural Hierarchy
 R script to identify and extract tandem repeats
 
