@@ -1,0 +1,128 @@
+The mafft-6.6xx-with-extensions-src.tgz package has
+the 'extensions' directory, which consists of the 
+codes from:
+
+(1) the Vienna RNA package 
+(2) MXSCARNA
+(3) ProbConsRNA
+
+These are distributed under different licenses:
+
+-------------------------------------------------------------------------------
+(1) The Vienna RNA package 
+
+See http://www.tbi.univie.ac.at/~ivo/RNA/
+
+                         Disclaimer and Copyright
+
+The programs, library and source code of the Vienna RNA Package are free
+software. They are distributed in the hope that they will be useful
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Permission is granted for research, educational, and commercial use
+and modification so long as 1) the package and any derived works are not 
+redistributed for any fee, other than media costs, 2) proper credit is
+given to the authors and the Institute for Theoretical Chemistry of the
+University of Vienna. 
+
+If you want to include this software in a commercial product, please contact 
+the authors.
+
+Reference:
+  Ivo L Hofacker and  Martin Fekete and  Peter F Stadler 
+  Secondary structure prediction for aligned RNA sequences.
+  J Mol Biol. 2002 vol. 319 (18) pp.3724-32
+
+-------------------------------------------------------------------------------
+(2) MXSCARNA
+
+See ./mxscarna_src/README and http://www.ncrna.org/software/mxscarna/
+
+* Author
+ Yasuo Tabei
+ 
+ Department of Computational Biology,
+ Graduate School of Frontier Science,
+ The University of Tokyo
+ and
+ Computational Biology Research Center (CBRC),
+ National Institute of Advanced Industrial Science and Technology (AIST)
+ 
+ E-mail: scarna AT m.aist.go.jp
+
+* What is MXSCARNA
+ MXSCARNA (Multiplex Stem Candidate Aligner for RNAs) is a tool for
+ fast structural multiple alignment of RNA sequences using progressive
+ alignment based on pairwise structural alignment algorithm of SCARNA.
+
+* License
+ While its original source code is provided as free software, MXSCARNA
+ contains the source codes of ProbCons and Rfold and the energy parameters
+ of Vienna RNA package (version 1.5). 
+ The author thanks Dr. Chuong Do, Dr. Hisanori Kiryu and Dr. Ivo Hofacker,
+ the authors of ProbCons, Rfold and Vienna RNA package respectively,
+ and Institute for Theoretical Chemistry of the  University of Vienna.
+ 
+ The source code of Rfold is located in ./mxscarna_src/rfold-0.1, which
+includes
+ energy parameters of Vienna RNA package in
+./mxscarna_src/rfold-0.1/src/vienna.
+ Energy parameters of Vienna RNA package are also included in the source
+ code of MXSCARNA (./mxscarna_src/vienna). Please follow
+./mxscarna_src/rfold-0.1/readme.txt
+ file, which describes the license of Rfold, and
+ ./mxscarna_src/rfold-0.1/src/vienna/COPYING file and
+./mxscarna_src/vienna/COPYING file,
+ which describe the copyright notice of the Vienna RNA package.
+ The source code of ProbCons is located in ./mxscarna_src/probconsRNA. Please
+follow
+ ./mxscarna_src/probcons/README.
+
+
+ The original part of MXSCARNA is provided as free software. It is
+ distributed in the hope that it will be useful but WITHOUT ANY WARRANTY;
+ without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ PARTICULAR PURPOSE.
+
+ Permission is granted for research, educational, and commercial use
+ and modification so long as
+ 1) the package and any derived works are not redistributed for any fee,
+    other than media costs,
+ 2) proper credit is given to
+    the authors of MXSCARNA, ProbCons, Rfold and Vienna RNA package,
+    the Univeristy of Tokyo,
+    Computational Biology Research Center (CBRC), AIST
+    and Institute for Theoretical Chemistry of the  University of Vienna.
+
+ If you want to include this software in a commercial product, please
+ contact the author.
+
+* Citation
+ Yasuo Tabei, Hisanori Kiryu, Taishin Kin, Kiyoshi Asai
+ A fast structural multiple alignment method for long RNA sequences.
+ BMC bioinformatics 9:33 (2008)
+
+-------------------------------------------------------------------------------
+(3) ProbCons
+
+See http://probcons.stanford.edu/ and ./mxscarna_src/probconsRNA/README
+
+* Author
+  Chuong Do
+
+* License
+PROBCONS has been made  freely  available  as  PUBLIC  DOMAIN
+software and hence is not subject to copyright in the  United
+States.  This system and/or any portion of  the  source  code
+may be used, modified, or redistributed without restrictions.
+PROBCONS is distributed WITHOUT WARRANTY, express or implied.
+The authors accept NO LEGAL LIABILITY OR  RESPONSIBILITY  for
+loss due to reliance on the program.
+
+* Citation
+Do CB, Mahabhashyam MS, Brudno M, Batzoglou S.
+ProbCons: Probabilistic consistency-based multiple sequence alignment.
+Genome Res. 2005 15:330-40.
+
+-------------------------------------------------------------------------------
