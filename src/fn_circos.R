@@ -3,8 +3,8 @@
 circos_plotter <- function(outputs.directory, assemblyName, chr_names, chr_lengths, plot.min, plot.max){
   print("plotting")
   setwd(outputs.directory)
-  file <- list.files(outputs.directory, pattern = "Summary")
-  repeats <- read.csv(file)
+  #file <- list.files(outputs.directory, pattern = "Summary")
+  repeats <- read.csv(paste(outputs.directory, "/Summary.of.repetitive.regions.", assemblyName, ".csv", sep = ""))
   repeats$most.freq.value.N <- as.integer(repeats$most.freq.value.N)
   
   if(!dir.exists(paste(outputs.directory, "/plots", sep = "")))
@@ -16,7 +16,7 @@ circos_plotter <- function(outputs.directory, assemblyName, chr_names, chr_lengt
   
   if(sum(grepl("chr", chr_names, ignore.case = TRUE)) > 1){
     
-    temp1 <- grep("chr", chr_names)
+    temp1 <- grep("chr", chr_names, ignore.case = TRUE)
     
     temp2 <- which(chr_lengths > 1000000)
     
@@ -148,9 +148,9 @@ circos_plotter <- function(outputs.directory, assemblyName, chr_names, chr_lengt
     title(assemblyName, cex.main = 2.5, line = -18.5)
   
   print("3")
-  #circos.track(track.index = get.current.track.index(), panel.fun = function(x, y) {
-  #  circos.axis(h="top")
-  #})
+  circos.track(track.index = get.current.track.index(), panel.fun = function(x, y) {
+    circos.axis(h="top")
+  })
   
   print("4")
   circos.par("track.height" = 0.15, cell.padding = c(0, 0, 0, 0))

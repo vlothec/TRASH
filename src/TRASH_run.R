@@ -216,12 +216,12 @@ if(PLOTTING.ONLY)
     print(paste("plotting", sep = ""))
     
     outputs.directory <- paste(execution.path, sep = "")
-    plot.min <- 50 #TODO implement
+    plot.min <- filter.small.repeats #TODO implement
     plot.max <- set.max.repeat.size #TODO implement
     
-    print(sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] )
+    #print(sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] )
     
-    print(nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) )
+    #print(nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) )
     
     circos_plotter(outputs.directory, 
                    assemblyName = unique(sequences$file.name)[i], 
