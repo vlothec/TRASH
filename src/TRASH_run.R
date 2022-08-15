@@ -1,4 +1,5 @@
 #!/usr/bin/env Rscript
+print("start")
 thisFile = function() 
 {
   cmd.Args = commandArgs(trailingOnly = FALSE)
@@ -10,37 +11,16 @@ thisFile = function()
     return(normalizePath(sys.frames()[[1]]$ofile))
   }
 }
-######### turn this OFF
-{
-  TEST = FALSE
-}
-#TODO:
-#add LIMIT.REPEATS.TO.ALIGN as variable for user #it limits the number of allowed sequences for alignment, so that big regions don't take forever
+
+
+
 ######### 
 installation.path = thisFile()
-if(TEST)
-{
-  installation.path = "/rds/user/pw457/hpc-work/TRASH_v1.0_rdy/src/file.R"
-}
 installation.path = strsplit(installation.path, split = "/")[[1]]
 installation.path = paste(installation.path[1:(length(installation.path) - 2)], collapse = "/")
 execution.path = getwd()
+#attach R libraries
 
-lib.path = paste(installation.path, "/libs", sep = "")
-#installation.path = "/rds/user/pw457/hpc-work/TRASH"
-#execution.path = getwd()
-#lib.path = "/rds/user/pw457/hpc-work/TRASH/libs"
-#fasta.list = c("51.atTest1.fa", "50.atTest1.fasta")
-print(.libPaths(lib.path))
-
-
-
-suppressPackageStartupMessages(library(stringr, quietly = TRUE))
-suppressPackageStartupMessages(library(base, quietly = TRUE))
-suppressPackageStartupMessages(library(Biostrings, quietly = TRUE))
-suppressPackageStartupMessages(library(seqinr, quietly = TRUE))
-suppressPackageStartupMessages(library(doParallel, quietly = TRUE))
-suppressPackageStartupMessages(library(circlize, quietly = TRUE))   #TODO add to the installer v0.4.15
 
 src.files = list.files(path = paste(installation.path, "/src", sep = ""), pattern = "fn_", full.names = TRUE)
 
@@ -51,16 +31,11 @@ for(i in 1 : length(src.files))
   source(src.files[i])
 }
 arguments = commandArgs(trailingOnly = TRUE)
-if(TEST)
-{
-  arguments = c("-t", "5", "-w ", "10", "-par ", "2", "-skipshort", "15000", "-o", 
-                "/rds/user/pw457/hpc-work/TRASH_manuscript/human", 
-                "/rds/user/pw457/hpc-work/TRASH_manuscript/human/assemblies/NC_060932.1.fasta")
-}
+
 
 #run settings
 {
-  PLOTTING.ONLY = TRUE
+  PLOTTING.ONLY = FALSE
   sequence.templates = NA
   skip.repetitive.regions = FALSE
   change.lib.paths = TRUE
@@ -72,7 +47,11 @@ if(TEST)
   filter.small.regions = 4000 # repetitive windows smaller than this size will be removed (helps getting rid of regions with short duplications)
   filter.small.repeats = 4 # repetitive windows where dominant kmer distance is lower than this value will be removed (for example AT dinucleotide repeats)
   window.size = 1500 # how far apart kmers can be in the initial search for exact matches. No repeats larger than this will be identified
-  MAX.CHROMOSOMES.TODO = 100000 #TODO: add to arguments
+  MAX.CHROMOSOMES.TODO = 100000 
+  hor.only = FALSE
+  class.name.for.HOR = ""
+  delete_temp_output = TRUE
+  LIMIT.REPEATS.TO.ALIGN = 78000
 }
 fasta.list = NULL
 {
@@ -89,9 +68,24 @@ fasta.list = NULL
       } else if(arguments[i] == "--skipr")
       {
         skip.repetitive.regions = TRUE
+      } else if(arguments[i] == "-horclass")
+      {
+        class.name.for.HOR = arguments[i + 1]
+      } else if(arguments[i] == "-limrepno")
+      {
+        LIMIT.REPEATS.TO.ALIGN = as.numeric(arguments[i + 1])
+      } else if(arguments[i] == "-horonly")
+      {
+        hor.only = TRUE
+      } else if(arguments[i] == "-maxchr")
+      {
+        MAX.CHROMOSOMES.TODO = as.numeric(arguments[i + 1])
       } else if(arguments[i] == "-w")
       {
         set.kmer = as.numeric(arguments[i + 1])
+      } else if(arguments[i] == "-keeptemp")
+      {
+        delete_temp_output = FALSE
       } else if(arguments[i] == "-t")
       {
         set.threshold = as.numeric(arguments[i + 1])
@@ -120,7 +114,7 @@ fasta.list = NULL
       }
       else if(arguments[i] == "-skipshort")
       {
-        skip.short.fasta.sequences = arguments[i + 1]
+        skip.short.fasta.sequences = as.numeric(arguments[i + 1])
       }
       else if(arguments[i] == "-par")
       {
@@ -136,7 +130,7 @@ fasta.list = NULL
           fasta.list = c(fasta.list, arguments[i])
         } else
         {
-          stop("Cannot find the", arguments[i], "fasta file specified", call. = FALSE)
+          stop(paste("Cannot find the", arguments[i], "fasta file specified", sep = ""), call. = FALSE)
         }
       }
     }
@@ -147,8 +141,30 @@ fasta.list = NULL
   } 
 }
 
+if(change.lib.paths)
+{
+  lib.path = paste(installation.path, "/libs", sep = "")
+  .libPaths(lib.path)
+}
 
 
+print(.libPaths()[1])
+
+
+suppressPackageStartupMessages(library(stringr, quietly = TRUE))
+suppressPackageStartupMessages(library(base, quietly = TRUE))
+suppressPackageStartupMessages(library(Biostrings, quietly = TRUE))
+suppressPackageStartupMessages(library(seqinr, quietly = TRUE))
+suppressPackageStartupMessages(library(doParallel, quietly = TRUE))
+suppressPackageStartupMessages(library(circlize, quietly = TRUE))   #TODO add to the installer v0.4.15
+
+
+if(PLOTTING.ONLY & hor.only)
+{
+  stop("Either only plot or only calculate HORs", call. = FALSE)
+}
+
+hor.c.script.path = paste(installation.path, "/src/HOR.V3.3", sep = "")
 
 
 # read in fasta and setup parallel to the length of fasta file
@@ -164,7 +180,7 @@ print(fasta.list)
       skip.short.fasta.sequences = 0
     } else
     {
-      if(length(nchar(fasta)[order(nchar(fasta), decreasing = TRUE)]) > MAX.CHROMOSOMES.TODO)####TODO modify this for final release, it overwrites a setting to analyse max 20 chromosomes
+      if(length(nchar(fasta)[order(nchar(fasta), decreasing = TRUE)]) > MAX.CHROMOSOMES.TODO)
       {
         skip.short.fasta.sequences = nchar(fasta)[order(nchar(fasta), decreasing = TRUE)][MAX.CHROMOSOMES.TODO] 
       }
@@ -196,16 +212,50 @@ print(fasta.list)
 
 if(!is.na(sequence.templates)) 
 {
-  sequence.templates = read.csv(file = sequence.templates)
+  if(file.exists(sequence.templates))
+  {
+    sequence.templates = read.csv(file = sequence.templates)
+  } else
+  {
+    stop("Provided sequence template file does not exist")
+  }
+  names.check = c("name", "seq", "length") %in% names(sequence.templates)
+  for(i in 1 : length(names.check))
+  {
+    if(!names.check[i])
+    {
+      print("Warning: sequence templates file might be incomplete")
+    }
+  }
 }
 
 
-
-
-
-
-
-
+if(hor.only)
+{
+  if(class.name.for.HOR == "")
+  {
+    stop("Repeat class not specified for HOR calculations", call. = FALSE)
+  }
+  
+  print("calculating HORs")
+  
+  #do HORs per chromosome
+  foreach(i = 1 : length(fasta.sequence)) %dopar% {  
+    #for(i in 1 : length(fasta.sequence)) {
+    HOR.wrapper(threshold = 5, 
+                cutoff = 2, 
+                temp.folder = execution.path, 
+                assemblyName = sequences$file.name[i], 
+                chr.name = sequences$fasta.name[i],
+                mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
+                hor.c.script.path = hor.c.script.path,
+                class.name = class.name.for.HOR)
+    gc()
+  } 
+  print("HORs finished)")
+  quit()
+  print("you can't see me")
+}
 
 
 if(PLOTTING.ONLY)
@@ -216,8 +266,8 @@ if(PLOTTING.ONLY)
     print(paste("plotting", sep = ""))
     
     outputs.directory <- paste(execution.path, sep = "")
-    plot.min <- filter.small.repeats #TODO implement
-    plot.max <- set.max.repeat.size #TODO implement
+    plot.min <- filter.small.repeats 
+    plot.max <- set.max.repeat.size 
     
     #print(sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] )
     
@@ -245,7 +295,7 @@ if(PLOTTING.ONLY)
     print(paste("finished", sep = ""))
   }
   print("Plotting finished)")
-  stop()
+  quit()
   print("you can't see me")
 }
 
@@ -269,7 +319,7 @@ foreach(i = 1 : length(fasta.sequence)) %dopar% {
     repetitive.regions = NULL
     repetitive.regions = Repeat.Identifier(DNA.sequence = fasta.sequence[i], assemblyName = sequences$file.name[i], fasta.name = sequences$fasta.name[i], 
                                            kmer = set.kmer, window = window.size, threshold = set.threshold, mask.small.regions = filter.small.regions, mask.small.repeats = filter.small.repeats,
-                                           max.repeat.size = set.max.repeat.size, LIMIT.REPEATS.TO.ALIGN = 78000,
+                                           max.repeat.size = set.max.repeat.size, LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
                                            tests = 4, temp.folder = execution.path, sequence.template = sequence.templates, mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""))
     if(!is.null(repetitive.regions)) 
     {
@@ -283,6 +333,7 @@ foreach(i = 1 : length(fasta.sequence)) %dopar% {
     }
   }
   gc()
+  
   print(paste("Finished working on sequence ", i , sep = ""))
 } 
 
@@ -316,48 +367,71 @@ for(i in 1 : length(fasta.list))
   
   extract.all.repeats(temp.folder = execution.path, assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])])
   
-  
-  print(paste("finished saving", sep = ""))
-  
-  for(i in 1 : length(fasta.list))
+  if(delete_temp_output)
   {
-    print(paste("plotting", sep = ""))
-    
-    outputs.directory <- paste(execution.path, "/", sequences$file.name[i], "_out", sep = "")
-    plot.min <- 50 #TODO implement
-    plot.max <- set.max.repeat.size #TODO implement
-    
-    circos_plotter(outputs.directory, 
-                   assemblyName = unique(sequences$file.name)[i], 
-                   chr_names = sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] , 
-                   chr_lengths = nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) , 
-                   plot.min, 
-                   plot.max)
-    
-    if(FALSE) #old plotting, can be turned on additionally
-    {
-      if(draw.scaffold.repeat.plots(temp.folder = execution.path, 
-                                    assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], 
-                                    fastaDirectory = fasta.list[i], 
-                                    only.Chr1_5 = FALSE, 
-                                    single.pngs = TRUE) != 0)
-      {
-        print("plotting likely failed")
-      }
-    }
-    
-    print(paste("finished", sep = ""))
+    #unlink(x = paste(execution.path, "/", sequences$file.name[i], "_out", sep = ""), recursive = TRUE, force = FALSE)
   }
   
+  print(paste("finished saving", sep = ""))
 }
 
 
+for(i in 1 : length(fasta.list))
+{
+  print(paste("plotting", sep = ""))
+  
+  outputs.directory <- paste(execution.path, sep = "")
+  plot.min <- filter.small.repeats 
+  plot.max <- set.max.repeat.size 
+  
+  #print(sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] )
+  
+  #print(nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) )
+  
+  circos_plotter(outputs.directory, 
+                 assemblyName = unique(sequences$file.name)[i], 
+                 chr_names = sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] , 
+                 chr_lengths = nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) , 
+                 plot.min, 
+                 plot.max)
+  if(FALSE) #old plotting, can be turned on additionally
+  {
+    if(draw.scaffold.repeat.plots(temp.folder = execution.path, 
+                                  assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], 
+                                  fastaDirectory = fasta.list[i], 
+                                  only.Chr1_5 = FALSE, 
+                                  single.pngs = TRUE) != 0)
+    {
+      print("plotting likely failed")
+    }
+  }
+  
+  print(paste("finished plotting", sep = ""))
+}
+
+if(class.name.for.HOR != "")
+{
+  
+  #do HORs per chromosome
+  foreach(i = 1 : length(fasta.sequence)) %dopar% {
+    HOR.wrapper(threshold = 5, 
+                cutoff = 2, 
+                temp.folder = execution.path, 
+                assemblyName = sequences$file.name[i], 
+                chr.name = chr.name,
+                mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
+                hor.c.script.path = hor.c.script.path,
+                class.name = class.name.for.HOR)
+    gc()
+  } 
+}
 
 
-#do HORs per chromosome
+print("TRASH finished, exiting")
 
-#foreach(i = 1 : length(fasta.sequence)) %dopar% {
-# HOR.wrapper(treshold = 5, cutoff = 2, temp.folder = execution.path, assemblyName = sequences$file.name[i], mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""))
-# gc()
-#} 
+gc()
+
+
+
+
 

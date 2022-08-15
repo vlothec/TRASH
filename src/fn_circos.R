@@ -1,7 +1,7 @@
 
 
 circos_plotter <- function(outputs.directory, assemblyName, chr_names, chr_lengths, plot.min, plot.max){
-  print("plotting")
+  print("circos")
   setwd(outputs.directory)
   #file <- list.files(outputs.directory, pattern = "Summary")
   repeats <- read.csv(paste(outputs.directory, "/Summary.of.repetitive.regions.", assemblyName, ".csv", sep = ""))
@@ -39,7 +39,7 @@ circos_plotter <- function(outputs.directory, assemblyName, chr_names, chr_lengt
   ### Identify main peaks
   
   repeats_l <- repeats[repeats$most.freq.value.N >= plot.min,]
-  repeats_l <- repeats[repeats$most.freq.value.N <= plot.max,]
+  repeats_l <- repeats_l[repeats$most.freq.value.N <= plot.max,]
   repeat_no <- aggregate(repeats.identified ~ most.freq.value.N, repeats_l, sum)
   total_length <- repeat_no$most.freq.value.N * repeat_no$repeats.identified
   percent_fraction <- total_length*100 / sum(chr_lengths)

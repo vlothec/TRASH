@@ -198,7 +198,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
     consensus.count = vector(mode = "numeric", length = nrow(regions.data.frame))
     
     #for each region find primary consensus
-    for(i in 1 : nrow(regions.data.frame))
+    i = 1
+    while(i != nrow(regions.data.frame))
     {
       write(paste("testing random N samples from region ", i, "/", nrow(regions.data.frame), " window size: ", regions.data.frame$end[i] - regions.data.frame$start[i], sep = ""), 
             file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
@@ -253,7 +254,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
       #mafft the best representation and extract primary consensus
       for(L in 1 : length(random.sequence.scores))
       {
-        if(!is.na(random.sequence.scores[L])) #if any of the scores is good, continue, else break
+        if(!is.na(random.sequence.scores[L])) #if any of the scores is good, continue and get out of the loop, otherwise there will be nothing assigned
         {
           if(random.sequence.scores[which.max(random.sequence.scores)] > 0)
           {
@@ -315,7 +316,126 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           break()
         }
       }
+      if(consensus.primary[i] == "") #in case all scores were rubbish
+      {
+        consensus.primary[i] = "none_identified"
+        consensus.count[i] = 0
+      }
+      
+      #if there was some coverage, but not all, separate the identified region and make a new one to identify the next class of repeats
+      if(consensus.primary[i] != "none_identified")
+      {
+        if(consensus.primary[i] != "")
+        {
+          max.score.for.region = nchar(seqC)
+          identified.score = random.sequence.scores[which.max(random.sequence.scores)]
+          if(is.numeric(identified.score) & is.numeric(max.score.for.region))
+          {
+            leftover.space = max.score.for.region - random.sequence.scores[which.max(random.sequence.scores)]
+            
+            if(leftover.space > mask.small.regions) #see if total leftover space is more than minimum region size
+            {
+              #find consecutive windows that would be unoccupied by the repeats and are bigger than minimum region size
+              if(!is.null(winner) & exists("winner"))
+              {
+                start.repetitive.region = regions.data.frame$start[i]
+                end.repetitive.region = regions.data.frame$end[i]
+                
+                start.new.region = start.repetitive.region
+                
+                for(s in 1 : nrow(winner))
+                {
+                  end.new.region = winner$start[s]
+                  
+                  if((end.new.region - start.new.region) > mask.small.regions) #make a new region, also find a new N value for it
+                  {
+                    new.distance.N = 0
+                    new.index = max(regions.data.frame$index) + 1
+                    
+                    seqB = str_sub(DNA.sequence, start.new.region, end.new.region)
+                    write(paste("calculating distances on region ", new.index, "/", (nrow(regions.data.frame) + 1), " region size: ", nchar(seqB), sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+                    
+                    distance = vector(mode = "numeric", length =  nchar(seqB))
+                    for(ii in 1 : (nchar(seqB) - kmer + 1))
+                    {
+                      kmer.pattern = str_sub(seqB, ii, (ii + kmer - 1))
+                      window.string = str_sub(seqB, (ii + 1 + mask.small.repeats), (ii + max.repeat.size))
+                      distance[ii] = str_locate(string = window.string, pattern = kmer.pattern)[[1]] + mask.small.repeats
+                    }
+                    distance = distance[!is.na(distance)]
+                    distance = distance[distance > mask.small.repeats]
+                    if(length(distance) > 0)
+                    {
+                      hist.values = hist(distance, breaks = max(distance), plot = FALSE)
+                      new.distance.N = hist.values$breaks[which.max(hist.values$counts) + 1]
+                    }
+                    
+                    if(!is.na(new.distance.N) & !is.null(new.distance.N) & new.distance.N > 0)
+                    {
+                      regions.data.frame[(nrow(regions.data.frame) + 1),] = c(new.index, 
+                                                                              "", 
+                                                                              start.new.region,
+                                                                              end.new.region, 
+                                                                              regions.data.frame$average.score[i], 
+                                                                              most.freq.value.N = new.distance.N)
+                    }
+                    
+                    start.new.region = winner$end[s]
+                    
+                  }
+                }
+                
+                end.new.region = end.repetitive.region
+                
+                #for the last time after the final repeat
+                
+                if((end.new.region - start.new.region) > mask.small.regions) #make a new region, also find a new N value for it
+                {
+                  new.distance.N = 0
+                  new.index = max(regions.data.frame$index) + 1
+                  
+                  seqB = str_sub(DNA.sequence, start.new.region, end.new.region)
+                  write(paste("calculating distances on region ", new.index, "/", (nrow(regions.data.frame) + 1), " region size: ", nchar(seqB), sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+                  
+                  distance = vector(mode = "numeric", length =  nchar(seqB))
+                  for(ii in 1 : (nchar(seqB) - kmer + 1))
+                  {
+                    kmer.pattern = str_sub(seqB, ii, (ii + kmer - 1))
+                    window.string = str_sub(seqB, (ii + 1 + mask.small.repeats), (ii + max.repeat.size))
+                    distance[ii] = str_locate(string = window.string, pattern = kmer.pattern)[[1]] + mask.small.repeats
+                  }
+                  distance = distance[!is.na(distance)]
+                  distance = distance[distance > mask.small.repeats]
+                  if(length(distance) > 0)
+                  {
+                    hist.values = hist(distance, breaks = max(distance), plot = FALSE)
+                    new.distance.N = hist.values$breaks[which.max(hist.values$counts) + 1]
+                  }
+                  
+                  if(!is.na(new.distance.N) & !is.null(new.distance.N) & new.distance.N > 0)
+                  {
+                    regions.data.frame[(nrow(regions.data.frame) + 1),] = c(new.index, 
+                                                                            "", 
+                                                                            start.new.region,
+                                                                            end.new.region, 
+                                                                            regions.data.frame$average.score[i], 
+                                                                            most.freq.value.N = new.distance.N)
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      remove(winner, match)
+      i = i + 1
+      if(i > 10000)
+      {
+        print("TRASH warning: number of identified regions surpassed 10,000")
+      }
     }
+    
+
     
     
     regions.data.frame = cbind(regions.data.frame, consensus.primary)
