@@ -335,9 +335,12 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
             
             if(leftover.space > mask.small.regions) #see if total leftover space is more than minimum region size
             {
+              write(paste("find empty space ", which.max(random.sequence.scores), sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+              
               #find consecutive windows that would be unoccupied by the repeats and are bigger than minimum region size
-              if(!is.null(winner) & exists("winner"))
+              if(exists("winner"))
               {
+                
                 start.repetitive.region = regions.data.frame$start[i]
                 end.repetitive.region = regions.data.frame$end[i]
                 
@@ -388,6 +391,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                 end.new.region = end.repetitive.region
                 
                 #for the last time after the final repeat
+                write(paste("find empty space last time", which.max(random.sequence.scores), sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
                 
                 if((end.new.region - start.new.region) > mask.small.regions) #make a new region, also find a new N value for it
                 {
@@ -427,6 +431,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           }
         }
       }
+      write(paste("next loop i: ", i, sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+      
       if(exists(winner))
       {
         remove(winner)
