@@ -427,7 +427,14 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           }
         }
       }
-      remove(winner, match)
+      if(exists(winner))
+      {
+        remove(winner)
+      }
+      if(exists(match))
+      {
+        remove(match)
+      }
       i = i + 1
       if(i > 10000)
       {
