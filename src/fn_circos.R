@@ -120,6 +120,11 @@ circos_plotter <- function(outputs.directory, assemblyName, chr_names, chr_lengt
   
   print("set sectors")
   # set sectors
+  if(length(chrs) == 0){
+    
+    chrs <- c(1:length(chr_names))
+    
+  }
   
   repeats_chr <- subset(repeats_l, name %in% chr_names[chrs])
   names <- chr_names[chrs]
