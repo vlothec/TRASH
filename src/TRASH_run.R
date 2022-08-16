@@ -43,8 +43,8 @@ arguments = commandArgs(trailingOnly = TRUE)
   skip.short.fasta.sequences = 0
   set.kmer = 12 # kmer size used for initial identification of repetitive regions
   set.threshold = 10 # window repetitiveness score (0-100) threshold
-  set.max.repeat.size = 1000 # max size of repeats to be identified
-  filter.small.regions = 4000 # repetitive windows smaller than this size will be removed (helps getting rid of regions with short duplications)
+  set.max.repeat.size = 400 # max size of repeats to be identified
+  filter.small.regions = 2000 # repetitive windows smaller than this size will be removed (helps getting rid of regions with short duplications)
   filter.small.repeats = 4 # repetitive windows where dominant kmer distance is lower than this value will be removed (for example AT dinucleotide repeats)
   window.size = 1500 # how far apart kmers can be in the initial search for exact matches. No repeats larger than this will be identified
   MAX.CHROMOSOMES.TODO = 100000 
@@ -311,7 +311,7 @@ if(PLOTTING.ONLY)
 
 #identify repeats per chromosome
 foreach(i = 1 : length(fasta.sequence)) %dopar% {
-  #for(i in 1 : length(fasta.sequence)) {
+#for(i in 1 : length(fasta.sequence)) {  #TODO go back to par
   print(Sys.time())
   print(paste("Working on sequence ", i , sep = ""))
   if(!skip.repetitive.regions)
@@ -321,14 +321,11 @@ foreach(i = 1 : length(fasta.sequence)) %dopar% {
                                            kmer = set.kmer, window = window.size, threshold = set.threshold, mask.small.regions = filter.small.regions, mask.small.repeats = filter.small.repeats,
                                            max.repeat.size = set.max.repeat.size, LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
                                            tests = 4, temp.folder = execution.path, sequence.template = sequence.templates, mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""))
-    if(!is.null(repetitive.regions)) 
+    if(typeof(repetitive.regions) == "list")
     {
-      if(repetitive.regions != 0)
+      if(nrow(repetitive.regions) != 0)
       {
-        if(nrow(repetitive.regions) != 0)
-        {
-          write.csv(x = repetitive.regions, file = paste(execution.path, "/", sequences$file.name[i], "_out/Regions_", sequences$file.name[i], "_", sequences$fasta.name[i], ".csv", sep = ""), row.names = FALSE)
-        }
+        write.csv(x = repetitive.regions, file = paste(execution.path, "/", sequences$file.name[i], "_out/Regions_", sequences$file.name[i], "_", sequences$fasta.name[i], ".csv", sep = ""), row.names = FALSE)
       }
     }
   }
