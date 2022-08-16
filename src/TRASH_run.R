@@ -50,7 +50,7 @@ arguments = commandArgs(trailingOnly = TRUE)
   MAX.CHROMOSOMES.TODO = 100000 
   hor.only = FALSE
   class.name.for.HOR = ""
-  delete_temp_output = TRUE
+  delete_temp_output = FALSE
   LIMIT.REPEATS.TO.ALIGN = 78000 #in base pairs
 }
 fasta.list = NULL
@@ -83,9 +83,9 @@ fasta.list = NULL
       } else if(arguments[i] == "-w")
       {
         set.kmer = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-keeptemp")
+      } else if(arguments[i] == "-rmtemp")
       {
-        delete_temp_output = FALSE
+        delete_temp_output = TRUE
       } else if(arguments[i] == "-t")
       {
         set.threshold = as.numeric(arguments[i + 1])
@@ -311,7 +311,7 @@ if(PLOTTING.ONLY)
 
 #identify repeats per chromosome
 foreach(i = 1 : length(fasta.sequence)) %dopar% {
-#for(i in 1 : length(fasta.sequence)) {  #TODO go back to par
+  #for(i in 1 : length(fasta.sequence)) {  #TODO go back to par
   print(Sys.time())
   print(paste("Working on sequence ", i , sep = ""))
   if(!skip.repetitive.regions)
@@ -369,9 +369,11 @@ for(i in 1 : length(fasta.list))
   
   if(delete_temp_output)
   {
-    unlink(x = paste(execution.path, "/", sequences$file.name[i], "_out", sep = ""), recursive = TRUE, force = FALSE)
+    if(file.exists(paste(execution.path, "/", sequences$file.name[i], "_out", sep = "")))
+    {
+      unlink(x = paste(execution.path, "/", sequences$file.name[i], "_out", sep = ""), recursive = TRUE, force = FALSE)
+    }
   }
-  
   print(paste("finished saving", sep = ""))
 }
 
@@ -418,7 +420,7 @@ if(class.name.for.HOR != "")
                 cutoff = 2, 
                 temp.folder = execution.path, 
                 assemblyName = sequences$file.name[i], 
-                chr.name = chr.name,
+                chr.name = sequences$fasta.name[i],
                 mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
                 hor.c.script.path = hor.c.script.path,
                 class.name = class.name.for.HOR)

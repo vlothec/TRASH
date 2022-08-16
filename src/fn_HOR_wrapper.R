@@ -8,13 +8,12 @@ HOR.wrapper = function(threshold = 5,
                        hor.c.script.path = "",
                        class.name = "")
 {
-  print("HOR function")
-  print(class.name)
-  print(assemblyName)
-  print(chr.name)
+  print(paste("HOR function on ", chr.name, ", using repeats of class ", class.name, sep = ""))
   repeats = read.csv(file = paste(execution.path, "/all.repeats.from.", assemblyName, ".csv", sep = ""))
   classes = unique(repeats$class)
-  print(classes)
+  
+  print(paste("Available classes: ", classes, sep = ""))
+
   
   if(length(classes) == 0)
   {
@@ -89,6 +88,8 @@ HOR.wrapper = function(threshold = 5,
     return(1)
   }
   
+  print("Running HOR software")
+  
   system(paste(hor.c.script.path, " ", work.dir, "/ ", output.alignment, " ", 1, " ", threshold, " ", cutoff, " ", 1, sep = ""), intern = FALSE)
   
   hor.output.file = paste(work.dir, "/", "HORs_method_1_", output.alignment, "_t_", threshold, "_c_", cutoff, ".csv", sep = "")
@@ -131,7 +132,7 @@ HOR.wrapper = function(threshold = 5,
       }
     }
     
-    write.csv(x = hors, file = paste(temp.folder, "/HORs_", assemblyName, "_", chr.name, "_", class.name, ".fasta", sep = ""))
+    write.csv(x = hors, file = paste(temp.folder, "/HORs_", assemblyName, "_", chr.name, "_", class.name, ".csv", sep = ""))
     
     png(filename = paste(work.dir, "/HOR_plot_", assemblyName, "_", chr.name, "_", class.name, ".png", sep = ""), width = 5000, height = 5000, pointsize = 25)
     plot(xlab = paste(assemblyName, "_", chr.name, "_", class.name, sep = ""), 
@@ -143,6 +144,6 @@ HOR.wrapper = function(threshold = 5,
     dev.off()
   }
     
-  print("done")
+  print("HOR done")
   return(0)
 }

@@ -29,7 +29,6 @@ export.gff = function(temp.folder = "",
   
   for(i in 1 : nrow(gff_format))
   {
-    print(i)
     gff_format$seqid[i] = strsplit(repeats$region.name[i], split = paste(assemblyName, "_", sep = ""))[[1]][2]
     gff_format$attributes[i] = paste("Class=", repeats$class[i], sep = "")
     
