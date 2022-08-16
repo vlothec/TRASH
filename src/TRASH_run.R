@@ -364,11 +364,12 @@ for(i in 1 : length(fasta.list))
   
   extract.all.repeats(temp.folder = execution.path, assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])])
   
-  
+  export.gff(temp.folder = execution.path, 
+             assemblyName = unique(sequences$file.name)[i])
   
   if(delete_temp_output)
   {
-    #unlink(x = paste(execution.path, "/", sequences$file.name[i], "_out", sep = ""), recursive = TRUE, force = FALSE)
+    unlink(x = paste(execution.path, "/", sequences$file.name[i], "_out", sep = ""), recursive = TRUE, force = FALSE)
   }
   
   print(paste("finished saving", sep = ""))

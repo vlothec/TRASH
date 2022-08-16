@@ -1,6 +1,6 @@
 
-export.gff = function(temp.folder = execution.path, 
-                       assemblyName = sequences$file.name[i])
+export.gff = function(temp.folder = "", 
+                       assemblyName = "")
 {
   print("Export gff function")
 
