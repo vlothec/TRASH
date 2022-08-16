@@ -14,7 +14,7 @@ circos_plotter <- function(outputs.directory, assemblyName, chr_names, chr_lengt
   print("identify chromosomes")
   ### identify chromosomes
   
-  if(sum(grepl("chr", chr_names, ignore.case = TRUE)) > 1){
+  if(sum(grepl("chr", chr_names, ignore.case = TRUE)) >= 1){
     
     temp1 <- grep("chr", chr_names, ignore.case = TRUE)
     
@@ -39,7 +39,7 @@ circos_plotter <- function(outputs.directory, assemblyName, chr_names, chr_lengt
   ### Identify main peaks
   
   repeats_l <- repeats[repeats$most.freq.value.N >= plot.min,]
-  repeats_l <- repeats_l[repeats$most.freq.value.N <= plot.max,]
+  repeats_l <- repeats_l[repeats_l$most.freq.value.N <= plot.max,]
   repeat_no <- aggregate(repeats.identified ~ most.freq.value.N, repeats_l, sum)
   total_length <- repeat_no$most.freq.value.N * repeat_no$repeats.identified
   percent_fraction <- total_length*100 / sum(chr_lengths)
@@ -231,8 +231,23 @@ circos_plotter <- function(outputs.directory, assemblyName, chr_names, chr_lengt
   par(fig = c(0.2, 0.7, 0.25, 0.75), new = T)
   
   tryCatch({
-    circos.par("track.height" = 0.02, cell.padding = c(0, 0, 0, 0), gap.degree = 0.5)
-    circos.initialize(xlim = sectors)
+    
+    if(length(scaffolds) < 700){
+      
+      circos.par("track.height" = 0.02, cell.padding = c(0, 0, 0, 0), gap.degree = 0.5)
+      
+      circos.initialize(xlim = sectors)
+      
+    } else {
+      
+      scaling_gap <- round((700/length(scaffolds))*0.5, digits = 2)
+      
+      circos.par("track.height" = 0.02, cell.padding = c(0, 0, 0, 0), gap.degree = scaling_gap)
+      
+      circos.initialize(xlim = sectors)
+      
+    }
+    
   }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   
   circos.track(ylim=c(0, 1), panel.fun=function(x, y) {

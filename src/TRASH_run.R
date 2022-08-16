@@ -43,7 +43,7 @@ arguments = commandArgs(trailingOnly = TRUE)
   skip.short.fasta.sequences = 0
   set.kmer = 12 # kmer size used for initial identification of repetitive regions
   set.threshold = 10 # window repetitiveness score (0-100) threshold
-  set.max.repeat.size = 400 # max size of repeats to be identified
+  set.max.repeat.size = 1000 # max size of repeats to be identified
   filter.small.regions = 2000 # repetitive windows smaller than this size will be removed (helps getting rid of regions with short duplications)
   filter.small.repeats = 4 # repetitive windows where dominant kmer distance is lower than this value will be removed (for example AT dinucleotide repeats)
   window.size = 1500 # how far apart kmers can be in the initial search for exact matches. No repeats larger than this will be identified
@@ -51,7 +51,7 @@ arguments = commandArgs(trailingOnly = TRUE)
   hor.only = FALSE
   class.name.for.HOR = ""
   delete_temp_output = TRUE
-  LIMIT.REPEATS.TO.ALIGN = 78000
+  LIMIT.REPEATS.TO.ALIGN = 78000 #in base pairs
 }
 fasta.list = NULL
 {
@@ -363,6 +363,8 @@ for(i in 1 : length(fasta.list))
   
   
   extract.all.repeats(temp.folder = execution.path, assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])])
+  
+  
   
   if(delete_temp_output)
   {
