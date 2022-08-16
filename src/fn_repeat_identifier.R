@@ -131,7 +131,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
     }
   }
   
-  write(paste("sequence ", fasta.name, "finished calculating regions", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+  write(paste("sequence ", fasta.name, " finished calculating regions", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
   
   #remove small regions
   regions.data.frame = regions.data.frame[(regions.data.frame$end - regions.data.frame$start) > mask.small.regions,]
@@ -143,7 +143,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
   
   #stop if nothing identified
   if(nrow(regions.data.frame) < 1){
-    write(paste("sequence ", fasta.name, "no repeats found", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+    write(paste("sequence ", fasta.name, " no repeats found", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
     
     return(0)
   }
@@ -347,8 +347,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                   
                   #find consecutive windows that would be unoccupied by the repeats and are bigger than minimum region size
                   
-                  start.repetitive.region = regions.data.frame$start[i]
-                  end.repetitive.region = regions.data.frame$end[i]
+                  start.repetitive.region = as.numeric(regions.data.frame$start[i])
+                  end.repetitive.region = as.numeric(regions.data.frame$end[i])
                   
                   start.new.region = start.repetitive.region
                   
@@ -391,7 +391,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                                       new.distance.N, "", 0, sep = ", "),
                                 file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
                           
-                          regions.data.frame[(nrow(regions.data.frame) + 1),] = c((max(regions.data.frame$index) + 1), 
+                          regions.data.frame[(nrow(regions.data.frame) + 1),] = c((as.numeric(max(regions.data.frame$index))+1), 
                                                                                   fasta.name, 
                                                                                   start.new.region,
                                                                                   end.new.region, 
@@ -415,7 +415,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                     end.new.region = end.repetitive.region
                     
                     #for the last time after the final repeat
-                    write(paste("find empty space last time", i, " with space left: ", leftover.space, sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+                    write(paste("found empty space last time", i, " with space left: ", leftover.space, sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
                     
                     if((end.new.region - start.new.region) > mask.small.regions) #make a new region, also find a new N value for it
                     {
@@ -449,7 +449,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                                     regions.data.frame$ave.score[i], 
                                     new.distance.N, "", 0, sep = ", "),
                               file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
-                        regions.data.frame[(nrow(regions.data.frame) + 1),] = c((max(regions.data.frame$index) + 1), 
+                        regions.data.frame[(nrow(regions.data.frame) + 1),] = c((as.numeric(max(regions.data.frame$index))+1), 
                                                                                 fasta.name, 
                                                                                 start.new.region,
                                                                                 end.new.region, 
@@ -485,7 +485,15 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
             {
               write(paste("new old region split d: ", d, sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
               
-              regions.data.frame[(nrow(regions.data.frame) + 1),] = c(as.numeric(max(regions.data.frame$index) + 1), 
+              write(paste("new row: ", as.numeric(max(regions.data.frame$index)), 
+                          fasta.name, 
+                          as.numeric(old.start),
+                          as.numeric(old.end), 
+                          as.numeric(regions.data.frame$ave.score[i]), 
+                          as.numeric(regions.data.frame$most.freq.value.N[i]), 
+                          regions.data.frame$consensus.primary[i], 0, sep = ", "),
+                    file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+              regions.data.frame[(nrow(regions.data.frame) + 1),] = c((as.numeric(max(regions.data.frame$index))+1), 
                                                                       fasta.name, 
                                                                       as.numeric(old.start),
                                                                       as.numeric(old.end), 
@@ -500,9 +508,17 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           old.end = end.repetitive.region #for the last one
           if(old.end > old.start)
           {
-            write(paste("new old region split d: ", d, sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+            write(paste("new old region split, last, d: ", d, sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
             
-            regions.data.frame[(nrow(regions.data.frame) + 1),] = c(as.numeric(max(regions.data.frame$index) + 1), 
+            write(paste("new row: ", as.numeric(max(regions.data.frame$index)), 
+                        fasta.name, 
+                        as.numeric(old.start),
+                        as.numeric(old.end), 
+                        as.numeric(regions.data.frame$ave.score[i]), 
+                        as.numeric(regions.data.frame$most.freq.value.N[i]), 
+                        regions.data.frame$consensus.primary[i], 0, sep = ", "),
+                  file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+            regions.data.frame[(nrow(regions.data.frame) + 1),] = c((as.numeric(max(regions.data.frame$index))+1), 
                                                                     fasta.name, 
                                                                     as.numeric(old.start),
                                                                     as.numeric(old.end), 
@@ -513,6 +529,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
             regions.data.frame$name[i] = "REMOVE_ROW"
           }
         }
+        write(paste("fix data type", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+        
         regions.data.frame$start = as.numeric(regions.data.frame$start)
         regions.data.frame$end = as.numeric(regions.data.frame$end)
         regions.data.frame$index = as.numeric(regions.data.frame$index)
