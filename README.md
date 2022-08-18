@@ -51,23 +51,23 @@ This will generate 3 files: "RepetitiveRegions_assembly.fa.csv", "Repeats_assemb
 
 ### Repeat identification settings
 ```
--def 			#use the default R packages path.
--rmtemp 		#remove the "*_out" directory after the run completion.
--horclass name		#set the name of the repeat family that should be used for HOR calculations, required for the HOR module to be activated.
--limrepno x		#limit alignment sizes (in bp of total sequence) used during the run to calculate consensus, samples repeats to avaoid large alignment operations. 78000 by default
--horonly x		#skip the repeat identification if was performed earlier and only calculate HORs, needs to be used togehter with -horclass flag.
--minhor x		#HORs shorter than this value will be discarded, 3 by default.
--maxdiv x		#pair of repeats with divergence score higher than this value will not be considered as a potential HOR, 5 by default.
--maxchr x  		#total number of sequences that should be analysed. Usefull when assembly contains large number of contigs. Sequences are chosen based in their size.
--k x			#kmer size, 10 by default. Decrease if more degraded arrays should be identified, increase for extra stringency (range of 8-16 recommended).
--t x 			#threshold score to choose repetitive windows, 5 by default. Change will work similar to the kmer size changes.
--win x 			#window size to use for initial count of repeat content, 1000 by default. Identified repeats will not be bigger than this value.
--m x 			#max repeat size to be identified, hard capped by -win setting.
--freg x 		#regions smaller than this will be filtered out at initial steps (some might remain if they come from splitting of a larger region).
--frep x 		#repeats shorter than this will be filtered out, 4 by default.
--o path			#output path where repeats will be saved and temporary directories created.
--seqt path 		#path to the file with repeat family templates, the file needs to be formatted as described below.
--par x 			#max number of cores ussed for multithreading, defaults to 1. If set as 0, TRASH will try to register as many cores as there are sequences, or maximum available, whatever is smaller.
+-def 			# use the default R packages path.
+-rmtemp 		# remove the "*_out" directory after the run completion.
+-horclass name		# set the name of the repeat family that should be used for HOR calculations, required for the HOR module to be activated.
+-limrepno x		# limit alignment sizes (in bp of total sequence) used during the run to calculate consensus, samples repeats to avaoid large alignment operations. 78000 by default
+-horonly x		# skip the repeat identification if was performed earlier and only calculate HORs, needs to be used togehter with -horclass flag.
+-minhor x		# HORs shorter than this value will be discarded, 3 by default.
+-maxdiv x		# pair of repeats with divergence score higher than this value will not be considered as a potential HOR, 5 by default.
+-maxchr x  		# total number of sequences that should be analysed. Usefull when assembly contains large number of contigs. Sequences are chosen based in their size.
+-k x			# kmer size, 10 by default. Decrease if more degraded arrays should be identified, increase for extra stringency (range of 8-16 recommended).
+-t x 			# threshold score to choose repetitive windows, 5 by default. Change will work similar to the kmer size changes.
+-win x 			# window size to use for initial count of repeat content, 1000 by default. Identified repeats will not be bigger than this value.
+-m x 			# max repeat size to be identified, hard capped by -win setting.
+-freg x 		# regions smaller than this will be filtered out at initial steps (some might remain if they come from splitting of a larger region).
+-frep x 		# repeats shorter than this will be filtered out, 4 by default.
+-o path			# output path where repeats will be saved and temporary directories created.
+-seqt path 		# path to the file with repeat family templates, the file needs to be formatted as described below.
+-par x 			# max number of cores ussed for multithreading, defaults to 1. If set as 0, TRASH will try to register as many cores as there are sequences, or maximum available, whatever is smaller.
 ```
 
 
