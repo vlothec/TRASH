@@ -72,7 +72,7 @@ This will generate 3 files: "RepetitiveRegions_assembly.fa.csv", "Repeats_assemb
 
 
 ## Threading
-The script will utilize maximum of 1 core per fasta sequence (not per file) if available. Dy default it will use up to 1 cores, which can be controlled with -par flag. 
+The script will utilize maximum of 1 core per fasta sequence (not per file) if available. Dy default it will use 1 core, which can be controlled with -par flag. 
 
 
 ## Higher Order Repeat analysis
