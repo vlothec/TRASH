@@ -54,7 +54,7 @@ This will generate 3 files: "RepetitiveRegions_assembly.fa.csv", "Repeats_assemb
 -def 			#use the default R packages path.
 -rmtemp 		#remove the "*_out" directory after the run completion.
 -horclass name	#set the name of the repeat family that should be used for HOR calculations, required for the HOR module to be activated.
--limrepno x 	#limit alignment sizes (in bp of total sequence) used during the run to calculate consensus, samples repeats to avaoid large alignment operations. 78000 by default
+-limrepno x		#limit alignment sizes (in bp of total sequence) used during the run to calculate consensus, samples repeats to avaoid large alignment operations. 78000 by default
 -horonly x		#skip the repeat identification if was performed earlier and only calculate HORs, needs to be used togehter with -horclass flag.
 -minhor x		#HORs shorter than this value will be discarded, 3 by default.
 -maxdiv x		#pair of repeats with divergence score higher than this value will not be considered as a potential HOR, 5 by default.
