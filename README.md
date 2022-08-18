@@ -1,36 +1,63 @@
-## RepeatIdentifier.R
-First part of the script, using a fasta file input finds tandemly arranged repeats
-## HOR.wrapper.single.R
-Second part of the script, UNFINISHED, takes .csv file with repeats and finds higher order repeats
-## HOR.V3.3.c 
-C script required for the HOR part
-
 # TRASH: Tandem Repeat Annotation and Structural Hierarchy
-identify and extract tandem repeats and investigate their higher order structure 
+Identify and extract tandem repeats and investigate their higher order structure 
 
-Local **kmer** counting finds regions that are repetitive. Windows (1kb by default) are scored based on proportion of repeated kmers to their size. **Threshold** is a score above which windows are considered to contain repeats. Periodicity of repeats is established and **MAFFT** is used to iterate over candidate representative sequences to find a consensus. 
+### Ooverwiev:
+Local **kmer** counting finds regions that are repetitive. Windows (1kb by default) are scored based on proportion of repeated kmers to their size. Windows above the **threshold** are considered to contain repeats. Periodicity of repeats is established and used to find a consensus sequence and map the repeats.
 
-## Before running:
+## Requirements:
 
-1. Make sure you have required R packages installed. **Required**
-2. Create a directory to write the ouptuts to, set the path as "outputs.directory" variable. **Required**
-3. Choose/create a directory with fasta formatted sequences to be analysed, set the path (to the directory) as "genomes.directory" variable. **Required**
-4. Prepare a csv file with repeat templates that can be used to shift the identified ones so that their start sites align. Set its path as "sequence.templates" variable. More on that in the script's comments **Optional**
-5. The script automatically tries to use as many CPUs as there are DNA sequences in the fasta files in the provided directory. If less cores should be used, "set.no.of.cores" variable can be changed. Multithreading not implemented for Windows OS **Optional**
+1. Linux-OX
+2. R-4.1.3 or newer
 
-## Outputs:
-For each fasta file input there will be created a separate directory with:
-1. frame4 and frame2 directories that contain alignments. Can take up a lot of space and can be removed
-2. plots directory contains plots of each sequence in the fasta file with size (y axis) and position (x axis) plotted for each repeat
-3. All.repeats.from.NAME.csv file that contains all repeats in a csv format
-4. Summary.of.repetitive.regions.NAME.csv file that contains details of the regions that were being analysed
+## Installation:
+
+### R
+R can be downloaded from https://cloud.r-project.org/ using the instructions provided, alternatively a conda enviroment can be set up and activated with:
+```
+conda install -n name -c conda-forge r-base=4.1.3
+conda activate name
+```
+### Quick and easy:
+Download and unpack TRASH.v1.0.pck.zip which will contain pre-installed image with all required dependancies:
+```
+wget --no-check-certificate --content-disposition https://github.com/vlothec/TRASH/TRASH.v1.0.pck.zip
+gunzip TRASH.v1.0.pck.zip
+chmod +x TRASH_run.sh
+```
+You can add TRASH_run.sh to the PATH directory
+```
+export PATH=$PATH:/TRASH_dir/TRASH_run.sh
+```
+### A bit longer:
+Download and unpack TRASH.v1.0.zip and run TRASH_install.sh. This will allow to control whether R packages will be downloaded to a system-default directory or TRASH directory (as in the pre-installed version). Downloaded libraries will be of specific version, which might cause problems if other versions are already installed.
+
+Adding --def flag to the TRASH_install.sh command will use of default R library path to install new packages.
+```
+wget --no-check-certificate --content-disposition https://github.com/vlothec/TRASH/TRASH.v1.0.pck.zip
+gunzip TRASH.v1.0.zip
+chmod +x TRASH_install.sh
+TRASH_install.sh
+```
+
+## Run
+TRASH requires at least one fasta file as an input (with ".fa", ".fna" or ".fasta" extensions). Multiple files can be provided as separate arguments or by merging sequences into one fasta file. There is no limit on amount of sequences provided.
+### Simple run:
+```
+TRASH_run.sh assembly.fa
+```
+This will generate 3 files: "RepetitiveRegions_assembly.fa.csv", "Repeats_assembly.fa.csv" and "Repeats_assembly.fa.gff" in the directory from which the command was run. Additionally, 3 directories will be created: "plots_assembly.fa" with circos plots and "assembly.fa_out" with temporary files that can be removed.
+
+## Additional options:
+
+### Repeat identification settings
+```
+-path #dsad
+```
 
 
-## Other settings:
-TODO
+## Threading
+The script will utilize maximum of 1 core per fasta sequence (not per file) if available. Dy default it will use up to 8 cores, which can be controlled with -par flag. 
 
-## Misc
-The script was tested on Windows and Linux OS
 
 # HOR 
 TODO
