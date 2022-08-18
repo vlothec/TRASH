@@ -39,9 +39,9 @@ arguments = commandArgs(trailingOnly = TRUE)
   sequence.templates = NA
   skip.repetitive.regions = FALSE
   change.lib.paths = TRUE
-  cores.no = NA
+  cores.no = 1
   skip.short.fasta.sequences = 0
-  set.kmer = 12 # kmer size used for initial identification of repetitive regions
+  set.kmer = 10 # kmer size used for initial identification of repetitive regions
   set.threshold = 10 # window repetitiveness score (0-100) threshold
   set.max.repeat.size = 1000 # max size of repeats to be identified
   filter.small.regions = 2000 # repetitive windows smaller than this size will be removed (helps getting rid of regions with short duplications)
@@ -62,10 +62,10 @@ fasta.list = NULL
   {
     for(i in 1 : length(arguments))
     {
-      if(arguments[i] == "--def")
+      if(arguments[i] == "-def")
       {
         change.lib.paths = FALSE
-      } else if(arguments[i] == "--skipr")
+      } else if(arguments[i] == "-skipr")
       {
         skip.repetitive.regions = TRUE
       } else if(arguments[i] == "-horclass")
@@ -77,10 +77,16 @@ fasta.list = NULL
       } else if(arguments[i] == "-horonly")
       {
         hor.only = TRUE
+      } else if(arguments[i] == "-minhor")
+      {
+        min.hor.value = as.numeric(arguments[i + 1])
+      } else if(arguments[i] == "-maxdiv")
+      {
+        max.divergence.value = as.numeric(arguments[i + 1])
       } else if(arguments[i] == "-maxchr")
       {
         MAX.CHROMOSOMES.TODO = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-w")
+      } else if(arguments[i] == "-k")
       {
         set.kmer = as.numeric(arguments[i + 1])
       } else if(arguments[i] == "-rmtemp")
@@ -111,10 +117,6 @@ fasta.list = NULL
       else if(arguments[i] == "-seqt")
       {
         sequence.templates = arguments[i + 1]
-      }
-      else if(arguments[i] == "-skipshort")
-      {
-        skip.short.fasta.sequences = as.numeric(arguments[i + 1])
       }
       else if(arguments[i] == "-par")
       {
@@ -197,7 +199,7 @@ print(fasta.list)
     }
   }
   sequences = sequences[-1,]
-  if(!is.na(cores.no))
+  if(cores.no != 0)
   {
     registerDoParallel(cores = cores.no)
   } else
@@ -416,8 +418,8 @@ if(class.name.for.HOR != "")
   
   #do HORs per chromosome
   foreach(i = 1 : length(fasta.sequence)) %dopar% {
-    HOR.wrapper(threshold = 5, 
-                cutoff = 2, 
+    HOR.wrapper(threshold = max.divergence.value, 
+                cutoff = min.hor.value, 
                 temp.folder = execution.path, 
                 assemblyName = sequences$file.name[i], 
                 chr.name = sequences$fasta.name[i],
