@@ -6,7 +6,7 @@ Local **kmer** counting finds regions that are repetitive. Windows (1kb by defau
 
 ## Requirements:
 
-1. Linux-OX
+1. Linux OS
 2. R-4.1.3 or newer
 
 ## Installation:
@@ -76,8 +76,26 @@ The script will utilize maximum of 1 core per fasta sequence (not per file) if a
 
 
 ## Higher Order Repeat analysis
-
 TRASH is able to calculate HORs defined as multi-monomer repeat duplications. It does not try to create a 1-dimentional description of repeat monomers, but uses a 2-dimentional matrix of identity between repeats to find instances of consecutive rows of high similarity. -minhor and -maxdiv control how many repeats constitute a HOR and what is the maximum divergence score between repeats to be part of a HOR.
 
+## Sequence templates
+An additional .csv file can be provided for the run that contains information on predicted repeat families (here called "class"). TRASH will check against it and if it finds a match, repeats of the same family will be tagged with the provided name. It consists of 3 columns with names of "name", "length" and "seq". An example file for Arabidopsis thaliana CEN180 would look like:
+```
+name,length,seq
+CEN180,178,AGTATAAGAACTTAAACCGCAACCGATCTTAAAAGCCTAAGTAGTGTTTCCTTGTTAGAAGACACAAAGCCAAAGACTCATATGGACTTTGGCTACACCATGAAAGCTTTGAGAAGCAAGAAGAAGGTTGGTTAGTGTTTTGGAGTCGAATATGACTTGATGTCATGTGTATGATTG
+```
 
+## Output
 
+*"RepetitiveRegions_assembly.fa.csv"*
+Table with regions (arrays) containing tandem repeats with information on their consensus sequence, period size and class (family) when sequence templates were provided.
+*"Repeats_assembly.fa.csv"*
+Table with repeats identified, their start and end positions, class (when applicable, if not assigned it will be "NA"), sequence (on the positive strand) and strand information (when repeats are assigned to a class they will be identified according to the provided template, thus possibly placing them on the negative strand, in this case additional column will contain sequence information on the negative strand).
+*"Repeats_assembly.fa.gff"*
+GFF file (https://www.ensembl.org/info/website/upload/gff.html) containing the same information as the .csv repeats file but in a format that can be widely used for annotation.
+*"plots/assembly_circos.pdf"* 
+Circos plot showing information contained in the "RepetitiveRegions_assembly.fa.csv" file.
+Optional: *"HOR/HOR_plot_assembly.fasta_chrName_class.png"*
+When HORs were calculated, these are simple plots showing the start locations of HOR blocks identified in a form of a dot-plot.
+Optional: *"HORs_assembly.fasta_chrName_class.png.csv"*
+Table with HORs identified. Each row is a pair of HOR blocks, each with their start and end coordinate, number of divergent positions between them ("total variant") and direction (1 means the blocks are in the same orientation, i.e. "head to tail", while 2 means they are on opposite strands, "head to head").
