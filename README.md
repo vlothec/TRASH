@@ -2,7 +2,7 @@
 Identify and extract tandem repeats and investigate their higher order structure 
 
 ### Ooverwiev:
-Local **kmer** counting finds regions that are repetitive. Windows (1kb by default) are scored based on proportion of repeated kmers to their size. Windows above the **threshold** are considered to contain repeats. Periodicity of repeats is established and used to find a consensus sequence and map the repeats.
+Local **kmer** counting finds regions that are repetitive. Windows are scored based on proportion of repeated kmers to their size. Those with score above the **threshold** are considered to contain repeats. Periodicity of repeats is established and used to find a consensus sequence and map the repeats.
 
 ## Requirements:
 
