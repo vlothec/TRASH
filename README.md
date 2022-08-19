@@ -49,7 +49,6 @@ This will generate 3 files: "RepetitiveRegions_assembly.fa.csv", "Repeats_assemb
 
 ## Additional options:
 
-### Repeat identification settings
 ```
 -def 			# use the default R packages path.
 -rmtemp 		# remove the "*_out" directory after the run completion.
@@ -71,7 +70,7 @@ This will generate 3 files: "RepetitiveRegions_assembly.fa.csv", "Repeats_assemb
 ```
 
 
-## Threading
+## Multithreading
 The script will utilize maximum of 1 core per fasta sequence (not per file) if available. Dy default it will use 1 core, which can be controlled with -par flag. 
 
 
