@@ -2,7 +2,7 @@
 Identify and extract tandem repeats and investigate their higher order structure 
 
 ### Ooverwiev:
-Local **kmer** counting finds regions that are repetitive. Windows are scored based on proportion of repeated kmers to their size. Those with score above the **threshold** are considered to contain repeats. Periodicity of repeats is established and used to find a consensus sequence and map the repeats.
+Local **kmer** counting finds regions that are repetitive. Windows are scored based on the proportion of repeated kmers to their size. Those which score above the **threshold** are considered to contain repeats. Periodicity of repeats is established and used to find a consensus sequence and map the repeats.
 
 ## Requirements:
 
@@ -31,7 +31,7 @@ export PATH=$PATH:/TRASH_dir/TRASH_run.sh
 ### A bit longer:
 Download and unpack TRASH.v1.0.zip and run TRASH_install.sh. This will allow to control whether R packages will be downloaded to a system-default directory or TRASH directory (as in the pre-installed version). Downloaded libraries will be of specific version, which might cause problems if other versions are already installed.
 
-Adding --def flag to the TRASH_install.sh command will use of default R library path to install new packages. This will force the use of --def flag each time TRASH is run!
+Adding --def flag to the TRASH_install.sh command will use the default R library path to install new packages. This will force the use of --def flag each time TRASH is run!
 ```
 wget --no-check-certificate --content-disposition https://github.com/vlothec/TRASH/TRASH.v1.0.pck.zip
 gunzip TRASH.v1.0.zip
@@ -40,7 +40,7 @@ TRASH_install.sh
 ```
 
 ## Run
-TRASH requires at least one fasta file as an input (with ".fa", ".fna" or ".fasta" extensions). Multiple files can be provided as separate arguments or by merging sequences into one fasta file. There is no limit on amount of sequences provided.
+TRASH requires at least one fasta file as an input (with ".fa", ".fna" or ".fasta" extensions). Multiple files can be provided as separate arguments or by merging sequences into one fasta file. There is no limit on the amount of sequences provided.
 ### Simple run:
 ```
 TRASH_run.sh assembly.fa
@@ -51,13 +51,13 @@ This will generate 3 files: "RepetitiveRegions_assembly.fa.csv", "Repeats_assemb
 
 ```
 -def 			# use the default R packages path.
--rmtemp 		# remove the "*_out" directory after the run completion.
+-rmtemp 		# remove the "*_out" directory after run completion.
 -horclass name		# set the name of the repeat family that should be used for HOR calculations, required for the HOR module to be activated.
--limrepno x		# limit alignment sizes (in bp of total sequence) used during the run to calculate consensus, samples repeats to avaoid large alignment operations. 78000 by default
--horonly x		# skip the repeat identification if was performed earlier and only calculate HORs, needs to be used togehter with -horclass flag.
+-limrepno x		# limit alignment sizes (in bp of total sequence) used during the run to calculate consensus, samples repeats to avoid large alignment operations. 78000 by default
+-horonly x		# skip the repeat identification if performed earlier and only calculate HORs, needs to be used togehter with -horclass flag.
 -minhor x		# HORs shorter than this value will be discarded, 3 by default.
 -maxdiv x		# pair of repeats with divergence score higher than this value will not be considered as a potential HOR, 5 by default.
--maxchr x  		# total number of sequences that should be analysed. Usefull when assembly contains large number of contigs. Sequences are chosen based in their size.
+-maxchr x  		# total number of sequences that should be analysed. Usefull when assembly contains large number of contigs. Sequences are chosen based on their size.
 -k x			# kmer size, 10 by default. Decrease if more degraded arrays should be identified, increase for extra stringency (range of 8-16 recommended).
 -t x 			# threshold score to choose repetitive windows, 5 by default. Change will work similar to the kmer size changes.
 -win x 			# window size to use for initial count of repeat content, 1000 by default. Identified repeats will not be bigger than this value.
@@ -66,12 +66,12 @@ This will generate 3 files: "RepetitiveRegions_assembly.fa.csv", "Repeats_assemb
 -frep x 		# repeats shorter than this will be filtered out, 4 by default.
 -o path			# output path where repeats will be saved and temporary directories created.
 -seqt path 		# path to the file with repeat family templates, the file needs to be formatted as described below.
--par x 			# max number of cores ussed for multithreading, defaults to 1. If set as 0, TRASH will try to register as many cores as there are sequences, or maximum available, whatever is smaller.
+-par x 			# max number of cores used for multithreading, defaults to 1. If set as 0, TRASH will try to register as many cores as there are sequences, or maximum available, whatever is smaller.
 ```
 
 
 ## Multithreading
-The script will utilize maximum of 1 core per fasta sequence (not per file) if available. Dy default it will use 1 core, which can be controlled with -par flag. 
+The script will utilize a maximum of 1 core per fasta sequence (not per file) if available. By default it will use 1 core, which can be controlled with -par flag. 
 
 
 ## Higher Order Repeat analysis
@@ -90,16 +90,16 @@ CEN180,178,AGTATAAGAACTTAAACCGCAACCGATCTTAAAAGCCTAAGTAGTGTTTCCTTGTTAGAAGACACAAAG
 Table with regions (arrays) containing tandem repeats with information on their consensus sequence, period size and class (family) when sequence templates were provided.
 
 **"Repeats_assembly.fa.csv"**
-Table with repeats identified, their start and end positions, class (when applicable, if not assigned it will be "NA"), sequence (on the positive strand) and strand information (when repeats are assigned to a class they will be identified according to the provided template, thus possibly placing them on the negative strand, in this case additional column will contain sequence information on the negative strand).
+Table with repeats identified, their start and end positions, class (when applicable, if not assigned it will be "NA"), sequence (on the positive strand) and strand information (when repeats are assigned to a class they will be identified according to the provided template, thus possibly placing them on the negative strand, in this case an additional column will contain sequence information on the negative strand).
 
 **"Repeats_assembly.fa.gff"**
-GFF file (https://www.ensembl.org/info/website/upload/gff.html) containing the same information as the .csv repeats file but in a format that can be widely used for annotation.
+GFF file (https://www.ensembl.org/info/website/upload/gff.html) containing the same information as the .csv repeats file but in a format that can be widely used for genome annotation.
 
 **"plots/assembly_circos.pdf"**
 Circos plot showing information contained in the "RepetitiveRegions_assembly.fa.csv" file.
 
 Optional: **"HOR/HOR_plot_assembly.fasta_chrName_class.png"**
-When HORs were calculated, these are simple plots showing the start locations of HOR blocks identified in a form of a dot-plot.
+When HORs were calculated, these are dot plots showing the start locations of HOR blocks identified.
 
 Optional: **"HORs_assembly.fasta_chrName_class.png.csv"**
 Table with HORs identified. Each row is a pair of HOR blocks, each with their start and end coordinate, number of divergent positions between them ("total variant") and direction (1 means the blocks are in the same orientation, i.e. "head to tail", while 2 means they are on opposite strands, "head to head").
