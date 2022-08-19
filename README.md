@@ -89,13 +89,18 @@ CEN180,178,AGTATAAGAACTTAAACCGCAACCGATCTTAAAAGCCTAAGTAGTGTTTCCTTGTTAGAAGACACAAAG
 
 **"RepetitiveRegions_assembly.fa.csv"**
 Table with regions (arrays) containing tandem repeats with information on their consensus sequence, period size and class (family) when sequence templates were provided.
+
 **"Repeats_assembly.fa.csv"**
 Table with repeats identified, their start and end positions, class (when applicable, if not assigned it will be "NA"), sequence (on the positive strand) and strand information (when repeats are assigned to a class they will be identified according to the provided template, thus possibly placing them on the negative strand, in this case additional column will contain sequence information on the negative strand).
+
 **"Repeats_assembly.fa.gff"**
 GFF file (https://www.ensembl.org/info/website/upload/gff.html) containing the same information as the .csv repeats file but in a format that can be widely used for annotation.
+
 **"plots/assembly_circos.pdf"**
 Circos plot showing information contained in the "RepetitiveRegions_assembly.fa.csv" file.
+
 Optional: **"HOR/HOR_plot_assembly.fasta_chrName_class.png"**
 When HORs were calculated, these are simple plots showing the start locations of HOR blocks identified in a form of a dot-plot.
+
 Optional: **"HORs_assembly.fasta_chrName_class.png.csv"**
 Table with HORs identified. Each row is a pair of HOR blocks, each with their start and end coordinate, number of divergent positions between them ("total variant") and direction (1 means the blocks are in the same orientation, i.e. "head to tail", while 2 means they are on opposite strands, "head to head").
