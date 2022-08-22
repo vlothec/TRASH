@@ -18,7 +18,7 @@ conda create -n name -c conda-forge r-base=4.1.3 zlib
 conda activate name
 ```
 ### Quick and easy:
-Download and unpack TRASH.v1.0.pck.zip which will contain pre-installed image with all required dependancies:
+Download and unpack TRASH_v1.0.pck.tar.gz which will contain pre-installed image with all required dependancies:
 ```
 wget https://github.com/vlothec/TRASH/raw/main/TRASH_v1.0.pck.tar.gz
 tar -xzvf TRASH_v1.0.pck.tar.gz
@@ -28,7 +28,7 @@ Download and unpack TRASH.v1.0.zip and run TRASH_install.sh. This will allow to 
 
 Adding --def flag to the TRASH_install.sh command will use the default R library path to install new packages. This will force the use of --def flag each time TRASH is run!
 ```
-wget --no-check-certificate --content-disposition https://github.com/vlothec/TRASH/TRASH.v1.0.pck.zip
+wget --no-check-certificate --content-disposition https://github.com/vlothec/TRASH/TRASH_v1.0.pck.tar.gz
 gunzip TRASH.v1.0.zip
 chmod +x TRASH_install.sh
 TRASH_install.sh
