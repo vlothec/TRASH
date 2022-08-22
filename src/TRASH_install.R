@@ -30,6 +30,11 @@ print("inst path:")
 print(installation.path)
 lib.path = paste(installation.path, "/libs", sep = "")
 
+if(!dir.exists(lib.path))
+{
+  dir.create(lib.path)
+}
+
 if(change.lib.paths)
 {
   .libPaths(lib.path)
