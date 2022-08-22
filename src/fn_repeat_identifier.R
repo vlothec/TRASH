@@ -162,7 +162,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
       {
         kmer.pattern = str_sub(seqB, ii, (ii + kmer - 1))
         window.string = str_sub(seqB, (ii + 1 + mask.small.repeats), (ii + max.repeat.size))
-        distance[ii] = str_locate(string = window.string, pattern = kmer.pattern)[[1]] + mask.small.repeats
+        distance[ii] = str_locate(string = window.string, pattern = kmer.pattern)[[1]] + mask.small.repeats   # TODO change str_locate to str_match to see if faster
       }
       distance = distance[!is.na(distance)]
       distance = distance[distance > mask.small.repeats]
