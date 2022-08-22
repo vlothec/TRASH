@@ -14,26 +14,21 @@ Local **kmer** counting finds regions that are repetitive. Windows are scored ba
 ### R
 R can be downloaded from https://cloud.r-project.org/ using the instructions provided, alternatively a conda enviroment can be set up and activated with:
 ```
-conda install -n name -c conda-forge r-base=4.1.3 zlib
+conda create -n name -c conda-forge r-base=4.1.3 zlib
 conda activate name
 ```
 ### Quick and easy:
-Download and unpack TRASH.v1.0.pck.zip which will contain pre-installed image with all required dependancies:
+Download and unpack TRASH_v1.0.pck.tar.gz which will contain pre-installed image with all required dependancies:
 ```
-wget --no-check-certificate --content-disposition https://github.com/vlothec/TRASH/TRASH.v1.0.pck.zip
-gunzip TRASH.v1.0.pck.zip
-chmod +x TRASH_run.sh
-```
-You can add TRASH_run.sh to the PATH directory
-```
-export PATH=$PATH:/TRASH_dir/TRASH_run.sh
+wget https://github.com/vlothec/TRASH/raw/main/TRASH_v1.0.pck.tar.gz
+tar -xzvf TRASH_v1.0.pck.tar.gz
 ```
 ### A bit longer:
 Download and unpack TRASH.v1.0.zip and run TRASH_install.sh. This will allow to control whether R packages will be downloaded to a system-default directory or TRASH directory (as in the pre-installed version). Downloaded libraries will be of specific version, which might cause problems if other versions are already installed.
 
 Adding --def flag to the TRASH_install.sh command will use the default R library path to install new packages. This will force the use of --def flag each time TRASH is run!
 ```
-wget --no-check-certificate --content-disposition https://github.com/vlothec/TRASH/TRASH.v1.0.pck.zip
+wget --no-check-certificate --content-disposition https://github.com/vlothec/TRASH/TRASH_v1.0.pck.tar.gz
 gunzip TRASH.v1.0.zip
 chmod +x TRASH_install.sh
 TRASH_install.sh
