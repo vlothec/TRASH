@@ -73,8 +73,7 @@ if(!require("base"))
 print("loading BiocManager")
 if(!require("BiocManager", quietly = TRUE, warn.conflicts = FALSE))
 {
-  install.packages("BiocManager")
-  #install_version("BiocManager", version = "1.30.16", repos = "http://cran.us.r-project.org")
+  install.packages("BiocManager", version = "1.30.16", repos = "http://cran.us.r-project.org")
   if(packageVersion("BiocManager") != "1.30.16")
   {
     print(paste("\"BiocManager\" library version is different than recommended (1.30.16). Consider installing TRASH in a new folder (see manual)"))
