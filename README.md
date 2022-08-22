@@ -14,7 +14,7 @@ Local **kmer** counting finds regions that are repetitive. Windows are scored ba
 ### R
 R can be downloaded from https://cloud.r-project.org/ using the instructions provided, alternatively a conda enviroment can be set up and activated with:
 ```
-conda install -n name -c conda-forge r-base=4.1.3
+conda install -n name -c conda-forge r-base=4.1.3 zlib
 conda activate name
 ```
 ### Quick and easy:
