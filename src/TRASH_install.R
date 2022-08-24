@@ -88,6 +88,17 @@ if(!require("Biostrings", quietly = TRUE, warn.conflicts = FALSE))
   library("Biostrings", quietly = TRUE, warn.conflicts = FALSE)
 }
 
+print("loading circlize")
+if(!require("circlize", quietly = TRUE, warn.conflicts = FALSE))
+{
+  install_version("circlize", version = "0.4.15", repos = "http://cran.us.r-project.org")
+  library("circlize", quietly = TRUE, warn.conflicts = FALSE)
+  if(packageVersion("circlize") != "0.4.15")
+  {
+    print(paste("\"circlize\" library version is different than recommended (0.4.15). Consider installing TRASH in a new folder (see manual)"))
+  }
+}
+
 print("loading seqinr")
 if(!require("seqinr", quietly = TRUE, warn.conflicts = FALSE))
 {
@@ -107,17 +118,6 @@ if(!require("doParallel", quietly = TRUE, warn.conflicts = FALSE))
   if(packageVersion("doParallel") != "1.0.17")
   {
     print(paste("\"doParallel\" library version is different than recommended (1.0.17). Consider installing TRASH in a new folder (see manual)"))
-  }
-}
-
-print("loading circlize")
-if(!require("circlize", quietly = TRUE, warn.conflicts = FALSE))
-{
-  install_version("circlize", version = "0.4.15", repos = "http://cran.us.r-project.org")
-  library("circlize", quietly = TRUE, warn.conflicts = FALSE)
-  if(packageVersion("circlize") != "0.4.15")
-  {
-    print(paste("\"circlize\" library version is different than recommended (0.4.15). Consider installing TRASH in a new folder (see manual)"))
   }
 }
 

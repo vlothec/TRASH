@@ -322,16 +322,13 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           regions.data.frame$consensus.primary[i] = "none_identified"
           regions.data.frame$consensus.count[i] = 0
         }
-        
+        new.regions.starts = NULL
+        new.regions.ends = NULL
         #if there was some coverage, but not all, separate the identified region and make a new one to identify the next class of repeats
         if(regions.data.frame$consensus.primary[i] != "none_identified")
         {
           if(regions.data.frame$consensus.primary[i] != "")
           {
-            
-            new.regions.starts = NULL
-            new.regions.ends = NULL
-            
             
             max.score.for.region = nchar(seqC)
             identified.score = random.sequence.scores[which.max(random.sequence.scores)]
