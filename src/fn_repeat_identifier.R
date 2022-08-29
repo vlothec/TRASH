@@ -23,6 +23,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
   
   write(paste("starting the main function", assemblyName, fasta.name, sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
   
+  write(paste("This is a debug file", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
+  
   regions.data.frame = data.frame(index = integer(), fasta.name = character(), start = integer(), end = integer(), ave.score = double(), most.freq.value.N = integer())#####
   
   
@@ -69,8 +71,6 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
   
   #get continuous regions
   {
-    smoothing.window.scores.across = 2
-    max.sd.window.scores = 2
     index = 0
     ii = 1
     while(ii <= length(scores)) #apply threshold and save repetitive windows from this fasta
@@ -97,34 +97,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
         regions.data.frame = rbind(regions.data.frame, temp)
       }
       
-      #check the windows for continuity and divide if necessary
-      {
-        if(FALSE)
-        {
-          #TODO NEW THING DONT DO
-          if((ii - start) >= (smoothing.window.scores.across * 2))
-          {
-            averages.vector = vector(mode = "numeric", length = (ii - start.index + 1))
-            sd.vector = vector(mode = "numeric", length = (ii - start.index + 1))
-            ID.averages = 1
-            for(j in start.index : ii)
-            {
-              indexes.to.check = (j - smoothing.window.scores.across) : (j + smoothing.window.scores.across)
-              indexes.to.check = indexes.to.check[indexes.to.check > 0 & indexes.to.check < ii]
-              averages.vector[ID.averages] = mean(scores[indexes.to.check])
-              sd.vector[ID.averages] = sd(scores[indexes.to.check])
-              ID.averages = ID.averages + 1
-            }
-            k = 1
-            ranges.sd.high = which(sd.vector > max.sd.window.scores)
-            while(k < length(ranges.sd.high))
-            {
-              if(ranges.sd.high[k+1] - ranges.sd.high[k] == 1)
-                k = k + 1
-            }
-          }
-        }
-      }
+     
       
       
       ii = ii + 1
@@ -698,6 +671,9 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
         {
           write(x =  paste("on ", regions.data.frame$fasta.name[i], ", generating consensus for region ", i, "/", nrow(regions.data.frame), " window size: ", regions.data.frame$end[i] - regions.data.frame$start[i], sep = ""), 
                 file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+          
+          write(paste("generating consensus for region ", i,  sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
+          
           seqC = str_sub(DNA.sequence, regions.data.frame$start[i], regions.data.frame$end[i])
           N = regions.data.frame$most.freq.value.N[i]
           maxMis = (N %/% 3) - 2
@@ -725,6 +701,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
             tempM$strand = "-"
           }
           match = rbind(tempP, tempM)
+          write(paste("after binding tempP i tempM", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
+          
           
           ########## handle overlaps
           primary.size = nchar(regions.data.frame$consensus.primary[i])
@@ -757,6 +735,9 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
             }
           }
           
+          write(paste("overlaps done, checking strand", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
+          
+          
           if(nrow(match) > 0)
           {
             for(ii in 1 : nrow(match))
@@ -777,6 +758,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
             
           }
           
+          write(paste("aligning", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
+          
           #align, need more than 1 sequence
           if(nrow(match) > 1)
           {
@@ -793,6 +776,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
             write.fasta(sequences = str_split(match$seq, pattern = "")[sample.IDs], names = paste(assemblyName, ".primary.extract.", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", match$start, sep = "")[sample.IDs], 
                         file.out = paste(paste(temp.folder, "/", assemblyName, "_out", sep = ""), "/temp2/inputs/primary.extract", ".", regions.data.frame$index[i], ".", regions.data.frame$name[i], ".", "fasta", sep = ""))
             
+            
+            write(paste("mafft", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
             
             #mafft the primary extraction
             
@@ -853,6 +838,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
       }
     }
   }
+  
+  write(paste("writing out repeats", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
   
   
   if(nrow(regions.data.frame) > 0)
