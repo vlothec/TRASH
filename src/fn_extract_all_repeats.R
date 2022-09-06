@@ -1,4 +1,7 @@
-
+extract.chromosome.name = function(regname_string, assemblyName)
+{
+  return(strsplit(regname_string, split = paste(assemblyName, "_", sep = ""))[[1]][2])
+}
 
 extract.all.repeats = function(temp.folder = "", assemblyName = "")
 {
@@ -43,6 +46,11 @@ extract.all.repeats = function(temp.folder = "", assemblyName = "")
   }
   repeats.all = repeats.all[order(repeats.all$start),]
   repeats.all = repeats.all[order(repeats.all$region.name),]
+  
+  repeats.all$seq.name = ""
+  
+  repeats.all$seq.name = unlist(lapply(X = repeats.all$region.name, extract.chromosome.name, assemblyName))
+  
   write.csv(x = repeats.all, file = paste(temp.folder, "/all.repeats.from.", assemblyName, ".csv", sep = ""), row.names = FALSE)
   return(1)
 }

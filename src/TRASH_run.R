@@ -52,6 +52,8 @@ arguments = commandArgs(trailingOnly = TRUE)
   class.name.for.HOR = ""
   delete_temp_output = FALSE
   LIMIT.REPEATS.TO.ALIGN = 78000 #in base pairs
+  simpleplot = FALSE
+  random.seed = NULL
 }
 fasta.list = NULL
 {
@@ -62,63 +64,70 @@ fasta.list = NULL
   {
     for(i in 1 : length(arguments))
     {
-      if(arguments[i] == "-def")
+      if(arguments[i] == "--def")
       {
         change.lib.paths = FALSE
-      } else if(arguments[i] == "-skipr")
+      } else if(arguments[i] == "--skipr")
       {
         skip.repetitive.regions = TRUE
-      } else if(arguments[i] == "-horclass")
+      } else if(arguments[i] == "--randomseed")
+      {
+        random.seed = as.numeric(arguments[i + 1])
+      } else if(arguments[i] == "--horclass")
       {
         class.name.for.HOR = arguments[i + 1]
-      } else if(arguments[i] == "-limrepno")
+      } else if(arguments[i] == "--limrepno")
       {
         LIMIT.REPEATS.TO.ALIGN = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-horonly")
+      } else if(arguments[i] == "--horonly")
       {
         hor.only = TRUE
-      } else if(arguments[i] == "-minhor")
+      } else if(arguments[i] == "--minhor")
       {
         min.hor.value = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-maxdiv")
+      } else if(arguments[i] == "--maxdiv")
       {
         max.divergence.value = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-maxchr")
+      } else if(arguments[i] == "--maxchr")
       {
         MAX.CHROMOSOMES.TODO = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-k")
+      } else if(arguments[i] == "--k")
       {
         set.kmer = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-rmtemp")
+      } else if(arguments[i] == "--rmtemp")
       {
         delete_temp_output = TRUE
-      } else if(arguments[i] == "-t")
+      } else if(arguments[i] == "--t")
       {
         set.threshold = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-m")
+      } else if(arguments[i] == "--m")
       {
         set.max.repeat.size = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-freg")
+      } else if(arguments[i] == "--freg")
       {
         filter.small.regions = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-frep")
+      } else if(arguments[i] == "--frep")
       {
         filter.small.repeats = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-o")
+      } else if(arguments[i] == "--o")
       {
         execution.path = arguments[i + 1]
-      } else if(arguments[i] == "-win")
+      } else if(arguments[i] == "--win")
       {
         window.size = as.numeric(arguments[i + 1])
-      } else if(arguments[i] == "-plotonly")
+      } else if(arguments[i] == "--plotonly")
       {
         PLOTTING.ONLY = TRUE
       }
-      else if(arguments[i] == "-seqt")
+      else if(arguments[i] == "--seqt")
       {
         sequence.templates = arguments[i + 1]
       }
-      else if(arguments[i] == "-par")
+      else if(arguments[i] == "--simpleplot")
+      {
+        simpleplot = TRUE
+      }
+      else if(arguments[i] == "--par")
       {
         cores.no = as.numeric(arguments[i + 1])
       }
@@ -282,7 +291,7 @@ if(PLOTTING.ONLY)
                    plot.min, 
                    plot.max)
     
-    if(FALSE) #old plotting, can be turned on additionally
+    if(simpleplot) #old plotting, can be turned on additionally
     {
       if(draw.scaffold.repeat.plots(temp.folder = execution.path, 
                                     assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], 
@@ -301,6 +310,21 @@ if(PLOTTING.ONLY)
   print("you can't see me")
 }
 
+
+date.now = str_replace_all(paste(strsplit(as.character(Sys.time()), split = " ")[[1]][1:2], collapse = ""), regex("[:,-]") , "")
+
+if(!is.null(random.seed))
+{
+  set.seed(random.seed)
+} else
+{
+  random.seed = .Random.seed[3]
+  
+  set.seed(random.seed)
+}
+
+write(paste("random seed is: ", random.seed,  sep = ""), 
+      file = paste("TRASH_", date.now,".out", sep = ""), append = TRUE)
 
 
 
@@ -398,7 +422,7 @@ for(i in 1 : length(fasta.list))
                  chr_lengths = nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) , 
                  plot.min, 
                  plot.max)
-  if(FALSE) #old plotting, can be turned on additionally
+  if(simpleplot) #old plotting, can be turned on additionally
   {
     if(draw.scaffold.repeat.plots(temp.folder = execution.path, 
                                   assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], 
@@ -412,6 +436,22 @@ for(i in 1 : length(fasta.list))
   
   print(paste("finished plotting", sep = ""))
 }
+
+
+
+for(i in 1 : length(fasta.list))
+{
+  print(paste("edit distance", sep = ""))
+  
+  #do edit distance per genome
+  ### this also initiates the repetitiveness column in the repeats data frame
+  calc.edit.distance(temp.folder = execution.path, 
+                     assemblyName = sequences$file.name[i],
+                     mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""))
+  
+  
+}
+
 
 if(class.name.for.HOR != "")
 {
@@ -428,6 +468,17 @@ if(class.name.for.HOR != "")
                 class.name = class.name.for.HOR)
     gc()
   } 
+  
+ 
+
+  #do repetitiveness per chromosome
+  calc.repetitiveness(temp.folder = execution.path, 
+                      assemblyName = sequences$file.name[i], 
+                      chr.name = sequences$fasta.name[i],
+                      mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
+                      hor.c.script.path = hor.c.script.path,
+                      class.name = class.name.for.HOR)
+  
 }
 
 

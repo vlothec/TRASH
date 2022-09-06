@@ -62,6 +62,8 @@ This will generate 3 files: "RepetitiveRegions_assembly.fa.csv", "Repeats_assemb
 --o path			# output path where repeats will be saved and temporary directories created.
 --seqt path 		# path to the file with repeat family templates, the file needs to be formatted as described below.
 --par x 			# max number of cores used for multithreading, defaults to 1. If set as 0, TRASH will try to register as many cores as there are sequences, or maximum available, whatever is smaller.
+--randomseed x		# set a random seed for reproducibility of the repeat identification, seed from the previous run can be found in "TRASH_YYYYMMDDHHMMSS.out" 
+--simpleplot		# output a plot with repeat coordinates and their sizes for each sequence (additionally to the circos plot)
 ```
 
 

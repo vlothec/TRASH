@@ -1,10 +1,10 @@
 
 HOR.wrapper = function(threshold = 5, 
                        cutoff = 2, 
-                       temp.folder = execution.path, 
-                       assemblyName = sequences$file.name[i], 
+                       temp.folder = "", #
+                       assemblyName = "", #sequences$file.name[i], 
                        chr.name = "",
-                       mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
+                       mafft.bat.file = "", #paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
                        hor.c.script.path = "",
                        class.name = "")
 {
