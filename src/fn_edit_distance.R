@@ -2,6 +2,7 @@
 
 calc.edit.distance = function(temp.folder = "",#execution.path
                               assemblyName = "",#sequences$file.name[i]
+                              fasta.name = "",
                               mafft.bat.file = "")#paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = "")
 {
   write(paste("calculating edit distance", sep = ""), 
@@ -34,7 +35,9 @@ calc.edit.distance = function(temp.folder = "",#execution.path
   
   classes = unique(repeats$class)
   
-  print(paste("Available classes: ", classes, sep = ""))
+  classes = classes[!is.na(classes)]
+  
+  print(paste("Available classes: ", paste(classes, collapse = ", "), sep = ""))
   
   
   if(length(classes) == 0)
@@ -48,6 +51,18 @@ calc.edit.distance = function(temp.folder = "",#execution.path
   repeats$seq.name[is.na(repeats$seq.name)] = ""
   
   classes = unique(repeats$class)
+  
+  
+  rm_class = NULL
+  
+  for(i in 1 : length(classes))
+  {
+    if(classes[i] == "")
+    {
+      rm_class = c(rm_class, i)
+    }
+  }
+  classes = classes[-rm_class]
   
   repeats$edit.distance = NA
   repeats$repetitiveness = NA

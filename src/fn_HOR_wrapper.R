@@ -9,6 +9,14 @@ HOR.wrapper = function(threshold = 5,
                        class.name = "")
 {
   print(paste("HOR function on ", chr.name, ", using repeats of class ", class.name, sep = ""))
+  
+  print("Repeat Identification new")
+  if(temp.folder == "")
+  {
+    stop("no temp folder")
+  }
+  setwd(temp.folder)
+  
   repeats = read.csv(file = paste(execution.path, "/all.repeats.from.", assemblyName, ".csv", sep = ""))
   classes = unique(repeats$class)
   

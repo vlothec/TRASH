@@ -40,6 +40,8 @@ arguments = commandArgs(trailingOnly = TRUE)
   skip.repetitive.regions = FALSE
   change.lib.paths = TRUE
   cores.no = 1
+  max.divergence.value = 5
+  min.hor.value = 3
   skip.short.fasta.sequences = 0
   set.kmer = 10 # kmer size used for initial identification of repetitive regions
   set.threshold = 10 # window repetitiveness score (0-100) threshold
@@ -163,6 +165,7 @@ print(.libPaths()[1])
 
 
 suppressPackageStartupMessages(library(stringr, quietly = TRUE))
+suppressPackageStartupMessages(library(stringdist, quietly = TRUE))
 suppressPackageStartupMessages(library(base, quietly = TRUE))
 suppressPackageStartupMessages(library(Biostrings, quietly = TRUE))
 suppressPackageStartupMessages(library(seqinr, quietly = TRUE))
@@ -250,19 +253,54 @@ if(hor.only)
   
   print("calculating HORs")
   
-  #do HORs per chromosome
-  foreach(i = 1 : length(fasta.sequence)) %dopar% {  
-    #for(i in 1 : length(fasta.sequence)) {
-    HOR.wrapper(threshold = 5, 
-                cutoff = 2, 
-                temp.folder = execution.path, 
-                assemblyName = sequences$file.name[i], 
-                chr.name = sequences$fasta.name[i],
-                mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
-                hor.c.script.path = hor.c.script.path,
-                class.name = class.name.for.HOR)
-    gc()
-  } 
+  if(FALSE) #TODO bring back
+  {
+    #do HORs per chromosome
+    foreach(i = 1 : length(fasta.sequence)) %dopar% {  
+      #for(i in 1 : length(fasta.sequence)) {
+      HOR.wrapper(threshold = 5, 
+                  cutoff = 2, 
+                  temp.folder = execution.path, 
+                  assemblyName = sequences$file.name[i], 
+                  chr.name = sequences$fasta.name[i],
+                  mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
+                  hor.c.script.path = hor.c.script.path,
+                  class.name = class.name.for.HOR)
+      gc()
+    } 
+  }
+  
+  
+  for(i in 1 : length(fasta.sequence))
+  {
+    #do repetitiveness per chromosome
+    calc.repetitiveness(temp.folder = execution.path, 
+                        assemblyName = sequences$file.name[i], 
+                        chr.name = sequences$fasta.name[i],
+                        hor.c.script.path = hor.c.script.path,
+                        class.name = class.name.for.HOR)
+    #plot repetitiveness per chromosome
+    plot.repetitiveness(temp.folder = execution.path, 
+                                 assemblyName = sequences$file.name[i], 
+                                 chr.name = sequences$fasta.name[i],
+                                 hor.c.script.path = hor.c.script.path,
+                                 class.name = class.name.for.HOR)
+  }
+  
+  
+  for(i in 1 : length(fasta.sequence))#### TODO remove this from here
+  {
+    #plot edit per chromosome
+    plot.edit(temp.folder = execution.path, 
+              assemblyName = sequences$file.name[i], 
+              chr.name = sequences$fasta.name[i],
+              hor.c.script.path = hor.c.script.path,
+              class.name = class.name.for.HOR)
+  }
+  
+  
+  
+  
   print("HORs finished)")
   quit()
   print("you can't see me")
@@ -315,12 +353,12 @@ date.now = str_replace_all(paste(strsplit(as.character(Sys.time()), split = " ")
 
 if(!is.null(random.seed))
 {
-  set.seed(random.seed)
+  set.seed(seed = random.seed)
 } else
 {
+  set.seed(seed = NULL)
   random.seed = .Random.seed[3]
-  
-  set.seed(random.seed)
+  set.seed(seed = random.seed)
 }
 
 write(paste("random seed is: ", random.seed,  sep = ""), 
@@ -447,9 +485,20 @@ for(i in 1 : length(fasta.list))
   ### this also initiates the repetitiveness column in the repeats data frame
   calc.edit.distance(temp.folder = execution.path, 
                      assemblyName = sequences$file.name[i],
+                     fasta.name = sequences$fasta.name[i],
                      mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""))
   
   
+}
+
+for(i in 1 : length(fasta.sequence))
+{
+  #plot edit per chromosome
+  plot.edit(temp.folder = execution.path, 
+                      assemblyName = sequences$file.name[i], 
+                      chr.name = sequences$fasta.name[i],
+                      hor.c.script.path = hor.c.script.path,
+                      class.name = class.name.for.HOR)
 }
 
 
@@ -471,14 +520,21 @@ if(class.name.for.HOR != "")
   
  
 
-  #do repetitiveness per chromosome
-  calc.repetitiveness(temp.folder = execution.path, 
-                      assemblyName = sequences$file.name[i], 
-                      chr.name = sequences$fasta.name[i],
-                      mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
-                      hor.c.script.path = hor.c.script.path,
-                      class.name = class.name.for.HOR)
-  
+  for(i in 1 : length(fasta.sequence))
+  {
+    #do repetitiveness per chromosome
+    calc.repetitiveness(temp.folder = execution.path, 
+                        assemblyName = sequences$file.name[i], 
+                        chr.name = sequences$fasta.name[i],
+                        hor.c.script.path = hor.c.script.path,
+                        class.name = class.name.for.HOR)
+    #do plot.repetitiveness per chromosome
+    plot.repetitiveness(temp.folder = execution.path, 
+                        assemblyName = sequences$file.name[i], 
+                        chr.name = sequences$fasta.name[i],
+                        hor.c.script.path = hor.c.script.path,
+                        class.name = class.name.for.HOR)
+  }
 }
 
 

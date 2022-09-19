@@ -59,6 +59,17 @@ if(!require("stringr", quietly = TRUE, warn.conflicts = FALSE))
   }
 }
 
+print("loading stringdist")
+if(!require("stringdist", quietly = TRUE, warn.conflicts = FALSE))
+{
+  install_version("stringdist", version = "0.9.8", repos = "http://cran.us.r-project.org")
+  library("stringdist", quietly = TRUE, warn.conflicts = FALSE)
+  if(packageVersion("stringdist") != "0.9.8")
+  {
+    print(paste("\"stringdist\" library version is different than recommended (0.9.8). Consider installing TRASH in a new folder (see manual)"))
+  }
+}
+
 print("loading base")
 if(!require("base"))
 {

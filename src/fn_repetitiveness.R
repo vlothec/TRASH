@@ -6,8 +6,14 @@ calc.repetitiveness = function(temp.folder = "", #execution.path
                                hor.c.script.path = "",#hor.c.script.path,
                                class.name = "")
 {
+  if(temp.folder == "")
+  {
+    stop("no temp folder")
+  }
+  setwd(temp.folder)
+  
   write(paste("calculating repetitiveness", sep = ""), 
-        file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+        file = paste(paste(assemblyName, "_out", sep = ""), "/", chr.name, ".out.txt", sep = ""), append = TRUE)
   
   repeats = read.csv(file = paste(execution.path, "/all.repeats.from.", assemblyName, ".csv", sep = ""))
   
@@ -30,7 +36,7 @@ calc.repetitiveness = function(temp.folder = "", #execution.path
   
   repeats$seq.name[is.na(repeats$seq.name)] = ""
   
-  chromosome.repeats.IDs = which(repeats$seq.name == chr.name)
+  chromosome.repeats.IDs = which(repeats$class == class.name & repeats$seq.name == chr.name)
   
   if(length(chromosome.repeats.IDs) > 0)
   {
@@ -59,16 +65,16 @@ calc.repetitiveness = function(temp.folder = "", #execution.path
   if(repeats.row.initial != nrow(repeats))
   {
     write(paste("diffrent number of rows in the edited repeats file, making a new file to compare", sep = ""), 
-          file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+          file = paste(paste(temp.folder, "/", assemblyName, "_out", sep = ""), "/", chr.name, ".out.txt", sep = ""), append = TRUE)
     
-    write.csv(x = repeats, file = paste("temp_", repeats.file, sep = ""), row.names = FALSE)
+    write.csv(x = repeats, file = paste("temp_", paste(execution.path, "/all.repeats.from.", assemblyName, ".csv", sep = ""), sep = ""), row.names = FALSE)
     
   } else #### export the repeats data frame with edit distance 
   {
     write(paste("extracting repeats data frame with edit distance", sep = ""), 
-          file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+          file = paste(paste(temp.folder, "/", assemblyName, "_out", sep = ""), "/", chr.name, ".out.txt", sep = ""), append = TRUE)
     
-    write.csv(x = repeats, file = paste(repeats.file, sep = ""), row.names = FALSE)
+    write.csv(x = repeats, file = paste(execution.path, "/all.repeats.from.", assemblyName, ".csv", sep = ""), row.names = FALSE)
   }
   
   return(0)
