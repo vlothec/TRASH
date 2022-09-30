@@ -44,16 +44,16 @@ arguments = commandArgs(trailingOnly = TRUE)
   min.hor.value = 3
   skip.short.fasta.sequences = 0
   set.kmer = 10 # kmer size used for initial identification of repetitive regions
-  set.threshold = 10 # window repetitiveness score (0-100) threshold
-  set.max.repeat.size = 1000 # max size of repeats to be identified
-  filter.small.regions = 2000 # repetitive windows smaller than this size will be removed (helps getting rid of regions with short duplications)
-  filter.small.repeats = 4 # repetitive windows where dominant kmer distance is lower than this value will be removed (for example AT dinucleotide repeats)
-  window.size = 1500 # how far apart kmers can be in the initial search for exact matches. No repeats larger than this will be identified
-  MAX.CHROMOSOMES.TODO = 100000 
+  set.threshold = 6 # window repetitiveness score (0-100) threshold
+  set.max.repeat.size = 650 # max size of repeats to be identified
+  filter.small.regions = 3000 # repetitive windows smaller than this size will be removed (helps getting rid of regions with short duplications)
+  filter.small.repeats = 5 # repetitive windows where dominant kmer distance is lower than this value will be removed (for example AT dinucleotide repeats)
+  window.size = 700 # how far apart kmers can be in the initial search for exact matches. No repeats larger than this will be identified
+  MAX.CHROMOSOMES.TODO = 48 
   hor.only = FALSE
   class.name.for.HOR = ""
   delete_temp_output = FALSE
-  LIMIT.REPEATS.TO.ALIGN = 78000 #in base pairs
+  LIMIT.REPEATS.TO.ALIGN = 35600 #in base pairs
   simpleplot = FALSE
   random.seed = NULL
 }
@@ -253,23 +253,19 @@ if(hor.only)
   
   print("calculating HORs")
   
-  if(FALSE) #TODO bring back
-  {
-    #do HORs per chromosome
-    foreach(i = 1 : length(fasta.sequence)) %dopar% {  
-      #for(i in 1 : length(fasta.sequence)) {
-      HOR.wrapper(threshold = 5, 
-                  cutoff = 2, 
-                  temp.folder = execution.path, 
-                  assemblyName = sequences$file.name[i], 
-                  chr.name = sequences$fasta.name[i],
-                  mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
-                  hor.c.script.path = hor.c.script.path,
-                  class.name = class.name.for.HOR)
-      gc()
-    } 
-  }
-  
+  #do HORs per chromosome
+  foreach(i = 1 : length(fasta.sequence)) %dopar% {  
+    #for(i in 1 : length(fasta.sequence)) {
+    HOR.wrapper(threshold = 5, 
+                cutoff = 2, 
+                temp.folder = execution.path, 
+                assemblyName = sequences$file.name[i], 
+                chr.name = sequences$fasta.name[i],
+                mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
+                hor.c.script.path = hor.c.script.path,
+                class.name = class.name.for.HOR)
+    gc()
+  } 
   
   for(i in 1 : length(fasta.sequence))
   {
@@ -288,18 +284,6 @@ if(hor.only)
   }
   
   
-  for(i in 1 : length(fasta.sequence))#### TODO remove this from here
-  {
-    #plot edit per chromosome
-    plot.edit(temp.folder = execution.path, 
-              assemblyName = sequences$file.name[i], 
-              chr.name = sequences$fasta.name[i],
-              hor.c.script.path = hor.c.script.path,
-              class.name = class.name.for.HOR)
-  }
-  
-  
-  
   
   print("HORs finished)")
   quit()
@@ -315,8 +299,9 @@ if(PLOTTING.ONLY)
     print(paste("plotting", sep = ""))
     
     outputs.directory <- paste(execution.path, sep = "")
-    plot.min <- filter.small.repeats 
-    plot.max <- set.max.repeat.size 
+    plot.min <- filter.small.repeats #TODO add a flag to change
+    plot.max <- set.max.repeat.size  #TODO add a flag to change
+    #TODO add a flag to change threshold
     
     #print(sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] )
     
@@ -428,8 +413,12 @@ for(i in 1 : length(fasta.list))
   
   extract.all.repeats(temp.folder = execution.path, assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])])
   
+  gc()
+  
   export.gff(temp.folder = execution.path, 
              assemblyName = unique(sequences$file.name)[i])
+  
+  gc()
   
   if(delete_temp_output)
   {
@@ -475,7 +464,7 @@ for(i in 1 : length(fasta.list))
   print(paste("finished plotting", sep = ""))
 }
 
-
+gc()
 
 for(i in 1 : length(fasta.list))
 {
@@ -490,7 +479,7 @@ for(i in 1 : length(fasta.list))
   
   
 }
-
+gc()
 for(i in 1 : length(fasta.sequence))
 {
   #plot edit per chromosome

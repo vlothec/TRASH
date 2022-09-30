@@ -13,11 +13,25 @@ calc.repetitiveness = function(temp.folder = "", #execution.path
   setwd(temp.folder)
   
   write(paste("calculating repetitiveness", sep = ""), 
-        file = paste(paste(assemblyName, "_out", sep = ""), "/", chr.name, ".out.txt", sep = ""), append = TRUE)
+        file = paste(paste(temp.folder, "/", assemblyName, "_out", sep = ""), "/", chr.name, ".out.txt", sep = ""), append = TRUE)
+  
+  if(!file.exists(paste(execution.path, "/all.repeats.from.", assemblyName, ".csv", sep = "")))
+  {
+    write(paste("No repeats in the file, repetitiveness not calculated", sep = ""), 
+          file = paste(paste(temp.folder, "/", assemblyName, "_out", sep = ""), "/", chr.name, ".out.txt", sep = ""), append = TRUE)
+    return(1)
+  }
   
   repeats = read.csv(file = paste(execution.path, "/all.repeats.from.", assemblyName, ".csv", sep = ""))
   
   repeats.row.initial = nrow(repeats)
+  
+  if(!file.exists(paste(temp.folder, "/HORs_", assemblyName, "_", chr.name, "_", class.name, ".csv", sep = "")))
+  {
+    write(paste("No HOR file, repetitiveness not calculated", sep = ""), 
+          file = paste(paste(temp.folder, "/", assemblyName, "_out", sep = ""), "/", chr.name, ".out.txt", sep = ""), append = TRUE)
+    return(1)
+  }
   
   HORs = read.csv(file = paste(temp.folder, "/HORs_", assemblyName, "_", chr.name, "_", class.name, ".csv", sep = ""))
   

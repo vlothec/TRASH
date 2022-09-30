@@ -67,6 +67,15 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
   write(paste("sequence ", fasta.name, " finished scoring windows", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
   
   #write(paste("sequence ", fasta.name, " scores: ", scores, sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+  plot.scores = TRUE #TODO makie it a flag
+  if(plot.scores)
+  {
+    write(scores, file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".scores.txt", sep = ""))
+    png(filename = paste(temp.folder, "/", paste(assemblyName, "_out", sep = ""), "/", assemblyName, "_", fasta.name, "_scores.histogram.png", sep = ""), width = 4000, height = 1000, pointsize = 45)
+    hist(x = scores)
+    dev.off()
+  }
+  
   
   
   #get continuous regions
