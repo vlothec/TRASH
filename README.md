@@ -1,7 +1,7 @@
 # TRASH: Tandem Repeat Annotation and Structural Hierarchy
 Identify and extract tandem repeats and investigate their higher order structure 
 
-### Overwiev:
+### Overview:
 Local **kmer** counting finds regions that are repetitive. Windows are scored based on the proportion of repeated kmers to their size. Those which score above the **threshold** are considered to contain repeats. Periodicity of repeats is established and used to find a consensus sequence and map the repeats.
 
 ## Requirements:
