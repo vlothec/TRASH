@@ -114,7 +114,7 @@ fasta.list = NULL
       } else if(arguments[i] == "--o")
       {
         execution.path = arguments[i + 1]
-      } else if(arguments[i] == "--win")
+        } else if(arguments[i] == "--win")
       {
         window.size = as.numeric(arguments[i + 1])
       } else if(arguments[i] == "--plotonly")
@@ -431,40 +431,6 @@ for(i in 1 : length(fasta.list))
 }
 
 
-for(i in 1 : length(fasta.list))
-{
-  print(paste("plotting", sep = ""))
-  
-  outputs.directory <- paste(execution.path, sep = "")
-  plot.min <- filter.small.repeats 
-  plot.max <- set.max.repeat.size 
-  
-  #print(sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] )
-  
-  #print(nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) )
-  
-  circos_plotter(outputs.directory, 
-                 assemblyName = unique(sequences$file.name)[i], 
-                 chr_names = sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] , 
-                 chr_lengths = nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) , 
-                 plot.min, 
-                 plot.max)
-  if(simpleplot) #old plotting, can be turned on additionally
-  {
-    if(draw.scaffold.repeat.plots(temp.folder = execution.path, 
-                                  assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], 
-                                  fastaDirectory = fasta.list[i], 
-                                  only.Chr1_5 = FALSE, 
-                                  single.pngs = TRUE) != 0)
-    {
-      print("plotting likely failed")
-    }
-  }
-  
-  print(paste("finished plotting", sep = ""))
-}
-
-gc()
 
 for(i in 1 : length(fasta.list))
 {
@@ -489,7 +455,7 @@ for(i in 1 : length(fasta.sequence))
                       hor.c.script.path = hor.c.script.path,
                       class.name = class.name.for.HOR)
 }
-
+gc()
 
 if(class.name.for.HOR != "")
 {
@@ -524,6 +490,40 @@ if(class.name.for.HOR != "")
                         hor.c.script.path = hor.c.script.path,
                         class.name = class.name.for.HOR)
   }
+}
+
+
+for(i in 1 : length(fasta.list))
+{
+  print(paste("plotting", sep = ""))
+  
+  outputs.directory <- paste(execution.path, sep = "")
+  plot.min <- filter.small.repeats 
+  plot.max <- set.max.repeat.size 
+  
+  #print(sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] )
+  
+  #print(nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) )
+  
+  circos_plotter(outputs.directory, 
+                 assemblyName = unique(sequences$file.name)[i], 
+                 chr_names = sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] , 
+                 chr_lengths = nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) , 
+                 plot.min, 
+                 plot.max)
+  if(simpleplot) #old plotting, can be turned on additionally
+  {
+    if(draw.scaffold.repeat.plots(temp.folder = execution.path, 
+                                  assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], 
+                                  fastaDirectory = fasta.list[i], 
+                                  only.Chr1_5 = FALSE, 
+                                  single.pngs = TRUE) != 0)
+    {
+      print("plotting likely failed")
+    }
+  }
+  
+  print(paste("finished plotting", sep = ""))
 }
 
 
