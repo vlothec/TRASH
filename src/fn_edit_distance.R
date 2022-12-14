@@ -84,6 +84,7 @@ calc.edit.distance = function(temp.folder = "",#execution.path
       repeats.temp = repeats[repeats$class == classes[i],]
       
       #### extract and align repeats of the class
+      N = mean(repeats.temp$width)
       if((nrow(repeats.temp) * N) > LIMIT.REPEATS.TO.ALIGN)
       {
         sample.IDs = sample(x = 1:nrow(repeats.temp), size = round(LIMIT.REPEATS.TO.ALIGN/N, 0))
