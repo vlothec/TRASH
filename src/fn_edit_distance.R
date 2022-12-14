@@ -2,7 +2,8 @@
 
 calc.edit.distance = function(temp.folder = "",#execution.path
                               assemblyName = "",#sequences$file.name[i]
-                              fasta.name = "",
+                              fasta.name = "", 
+                              LIMIT.REPEATS.TO.ALIGN = 78000,
                               mafft.bat.file = "")#paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = "")
 {
   write(paste("calculating edit distance", sep = ""), 
@@ -83,10 +84,21 @@ calc.edit.distance = function(temp.folder = "",#execution.path
       repeats.temp = repeats[repeats$class == classes[i],]
       
       #### extract and align repeats of the class
+      if((nrow(repeats.temp) * N) > LIMIT.REPEATS.TO.ALIGN)
+      {
+        sample.IDs = sample(x = 1:nrow(repeats.temp), size = round(LIMIT.REPEATS.TO.ALIGN/N, 0))
+      } else
+      {
+        sample.IDs = 1:nrow(repeats.temp)
+      }
+      
       
       file.to.align = paste(paste(assemblyName, "_out", sep = ""), "/temp1/edit.class.", i, ".fasta", sep = "")
       
-      write.fasta(sequences = as.list(repeats.temp$seq), names = as.list(paste(1:length(repeats.temp$strand), "_D", repeats.temp$strand,  sep = "")), file.out = file.to.align, open = "w")
+      write.fasta(sequences = as.list(repeats.temp$seq[sample.IDs]), 
+                  names = as.list(paste(1:length(repeats.temp$strand[sample.IDs]), "_D", repeats.temp$strand[sample.IDs],  sep = "")), 
+                  file.out = file.to.align, 
+                  open = "w")
       
       if(!file.exists(file.to.align))
       {

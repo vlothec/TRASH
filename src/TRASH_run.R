@@ -441,6 +441,7 @@ for(i in 1 : length(fasta.list))
   calc.edit.distance(temp.folder = execution.path, 
                      assemblyName = sequences$file.name[i],
                      fasta.name = sequences$fasta.name[i],
+                     LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
                      mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""))
   
   
