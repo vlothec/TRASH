@@ -140,7 +140,29 @@ for(i in 1 : length(src.files))
   source(src.files[i])
 }
 
-print("Checking installation")
+print("Checking mafft installation")
+
+if(file.exists(paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = "")))
+{
+  print("mafft executable found")
+} else if(file.exists(paste(installation.path, "/src/mafft-7.490-linux.tgz", sep = "")))
+{
+  print("Unpacking mafft")
+  system(paste("tar -xzvf ", installation.path, "/src/mafft-7.490-linux.tgz", sep = ""), intern = TRUE)
+} else 
+{
+  system(paste("wget https://mafft.cbrc.jp/alignment/software/mafft-7.490-linux.tgz", sep = ""))
+  print("Unpacking mafft")
+  system(paste("tar -xzvf ", installation.path, "/mafft-7.490-linux.tgz -C ", installation.path, "/src", sep = ""), intern = TRUE)
+}
+
+if(!file.exists(paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = "")))
+{
+  warning("neither mafft executable nor package found \nmake sure mafft is downloaded in the /src directory \nhttps://mafft.cbrc.jp/alignment/software/mafft-7.490-linux.tgz\nor unable to download")
+}
+
+
+print("Checking R library installation")
 
 if(exists("draw.scaffold.repeat.plots") & 
    exists("extract.all.repeats") & 
