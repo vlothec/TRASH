@@ -20,17 +20,18 @@ conda activate name
 ### Quick and easy:
 Download and unpack TRASH_v1.0.pck.tar.gz which will contain pre-installed image with all required dependancies:
 ```
-wget https://github.com/vlothec/TRASH/raw/main/TRASH_v1.1.tar.gz
-tar -xzvf TRASH_v1.0.pck.tar.gz
+wget https://github.com/vlothec/TRASH/raw/main/TRASH.v1.1.tar.gz
+or
+git clone https://github.com/vlothec/TRASH
+tar -xzvf TRASH.v1.1.tar.gz
 ```
 ### A bit longer:
-Download and unpack TRASH.v1.0.zip and run TRASH_install.sh. This will allow to control whether R packages will be downloaded to a system-default directory or TRASH directory (as in the pre-installed version). Downloaded libraries will be of specific version, which might cause problems if other versions are already installed.
+Download TRASH and run TRASH_install.sh. This will allow to control whether R packages will be downloaded to a system-default directory or TRASH directory (as in the pre-installed version). Downloaded libraries will be of a specific version, which might cause problems if other versions are already installed.
 
-Adding --def flag to the TRASH_install.sh command will use the default R library path to install new packages. This will force the use of --def flag each time TRASH is run!
+Adding --def flag to the TRASH_install.sh command will use the default R library path to install new packages. This will require the use of --def flag each time TRASH is run! This is for users that already have multiple R libraries installed and wish to keep the installation to take as little space as possible by avoiding redundant packages.
 ```
-wget --no-check-certificate --content-disposition https://github.com/vlothec/TRASH/TRASH_v1.0.pck.tar.gz
-wget https://github.com/vlothec/TRASH/raw/main/TRASH_v1.0.pck.tar.gz
-gunzip TRASH.v1.0.zip
+git clone https://github.com/vlothec/TRASH
+cd TRASH
 chmod +x TRASH_install.sh
 TRASH_install.sh
 ```
