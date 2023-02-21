@@ -21,8 +21,6 @@ conda activate name
 Download and unpack TRASH_v1.0.pck.tar.gz which will contain pre-installed image with all required dependancies:
 ```
 wget https://github.com/vlothec/TRASH/raw/main/TRASH.v1.1.tar.gz
-or
-git clone https://github.com/vlothec/TRASH
 tar -xzvf TRASH.v1.1.tar.gz
 ```
 ### A bit longer:
