@@ -67,7 +67,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
   write(paste("sequence ", fasta.name, " finished scoring windows", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
   
   #write(paste("sequence ", fasta.name, " scores: ", scores, sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
-  plot.scores = TRUE #TODO makie it a flag
+  plot.scores = F 
   if(plot.scores)
   {
     write(scores, file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".scores.txt", sep = ""))
@@ -152,12 +152,15 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
       {
         hist.values = hist(distance, breaks = max(distance), plot = FALSE)
         regions.data.frame$most.freq.value.N[i] = hist.values$breaks[which.max(hist.values$counts) + 1]
+        png(filename = paste("N val hist initial", i, ".png"))
+        hist(distance, breaks = max(distance), plot = TRUE)
+        dev.off()
       }
     }
     regions.data.frame = regions.data.frame[regions.data.frame$most.freq.value.N >= mask.small.repeats,]
   }
   write(paste("sequence ", fasta.name, ": finished calculating main distances", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
-  
+  #stop()
   
   
   #stop if nothing identified
@@ -358,6 +361,9 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                         {
                           hist.values = hist(distance, breaks = max(distance), plot = FALSE)
                           new.distance.N = hist.values$breaks[which.max(hist.values$counts) + 1]
+                          png(filename = paste("N val hist second", s, ".png"))
+                          hist(distance, breaks = max(distance), plot = TRUE)
+                          dev.off()
                         }
                         
                         if(!is.na(new.distance.N) & !is.null(new.distance.N) & new.distance.N > 0)
@@ -417,6 +423,9 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                       {
                         hist.values = hist(distance, breaks = max(distance), plot = FALSE)
                         new.distance.N = hist.values$breaks[which.max(hist.values$counts) + 1]
+                        png(filename = paste("N val hist third", i, ".png"))
+                        hist(distance, breaks = max(distance), plot = TRUE)
+                        dev.off()
                       }
                       
                       if(!is.na(new.distance.N) & !is.null(new.distance.N) & new.distance.N > 0)
@@ -798,7 +807,10 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
               if(Sys.info()['sysname'] == "Linux")
               {
                 system(paste(mafft.bat.file, " --quiet --retree 2 --inputorder ", input, " > ", output, sep = ""), intern = TRUE)
-              } 
+              } else
+              {
+                system(paste(mafft.bat.file, " --quiet --retree 2 --inputorder ", input, " > ", output, sep = ""), intern = TRUE)
+              }
               
               alignment = read.alignment(output, format = "FASTA", forceToLower = FALSE)
               

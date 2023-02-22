@@ -1,14 +1,23 @@
 #!/usr/bin/env Rscript
 print("start")
-thisFile = function() 
+if(Sys.info()['sysname'] == "Linux")
 {
-  cmd.Args = commandArgs(trailingOnly = FALSE)
-  find.file = "--file="
-  match = grep(find.file, cmd.Args)
-  if (length(match) > 0) {
-    return(normalizePath(sub(find.file, "", cmd.Args[match])))
-  } else {
-    return(normalizePath(sys.frames()[[1]]$ofile))
+  thisFile = function() 
+  {
+    cmd.Args = commandArgs(trailingOnly = FALSE)
+    find.file = "--file="
+    match = grep(find.file, cmd.Args)
+    if (length(match) > 0) {
+      return(normalizePath(sub(find.file, "", cmd.Args[match])))
+    } else {
+      return(normalizePath(sys.frames()[[1]]$ofile))
+    }
+  }
+} else
+{
+  thisFile = function() #needs to be run from the TRASH\src directory if on windows
+  {
+    return(strsplit(getwd(), split = "//src")[[1]][1])
   }
 }
 
@@ -17,13 +26,17 @@ thisFile = function()
 ######### 
 installation.path = thisFile()
 installation.path = strsplit(installation.path, split = "/")[[1]]
-installation.path = paste(installation.path[1:(length(installation.path) - 2)], collapse = "/")
+if(Sys.info()['sysname'] == "Linux")
+{
+  installation.path = paste(installation.path[1:(length(installation.path) - 2)], collapse = "/")
+} else
+{
+  installation.path = paste(installation.path[1:(length(installation.path) - 1)], collapse = "/")
+}
 execution.path = getwd()
 #attach R libraries
 
-
 src.files = list.files(path = paste(installation.path, "/src", sep = ""), pattern = "fn_", full.names = TRUE)
-
 print(Sys.time())
 for(i in 1 : length(src.files))
 {
@@ -114,7 +127,7 @@ fasta.list = NULL
       } else if(arguments[i] == "--o")
       {
         execution.path = arguments[i + 1]
-        } else if(arguments[i] == "--win")
+      } else if(arguments[i] == "--win")
       {
         window.size = as.numeric(arguments[i + 1])
       } else if(arguments[i] == "--plotonly")
@@ -137,7 +150,7 @@ fasta.list = NULL
       {
         if(file.exists(paste(execution.path, arguments[i], sep = "/")))
         {
-          fasta.list = c(paste(execution.path, arguments[i], sep = "/"))
+          fasta.list = c(fasta.list, paste(execution.path, arguments[i], sep = "/"))
         } else if(file.exists(arguments[i]))
         {
           fasta.list = c(fasta.list, arguments[i])
@@ -153,6 +166,7 @@ fasta.list = NULL
     print("Only Linux OS tested")
   } 
 }
+
 
 if(change.lib.paths)
 {
@@ -171,6 +185,14 @@ suppressPackageStartupMessages(library(Biostrings, quietly = TRUE))
 suppressPackageStartupMessages(library(seqinr, quietly = TRUE))
 suppressPackageStartupMessages(library(doParallel, quietly = TRUE))
 suppressPackageStartupMessages(library(circlize, quietly = TRUE))   #TODO add to the installer v0.4.15
+if(Sys.info()['sysname'] == "Linux")
+{
+  mafft.local = "/src/mafft-linux64/mafft.bat"
+} else
+{
+  mafft.local = "/src/mafft-win/mafft.bat"
+}
+
 
 
 if(PLOTTING.ONLY & hor.only)
@@ -205,7 +227,16 @@ print(fasta.list)
       if(nchar(fasta[j]) >= skip.short.fasta.sequences)
       {
         fasta.sequence = c(fasta.sequence,toupper(fasta[j]))
-        sequences = rbind(sequences, data.frame(file.name = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], fasta.name = names(fasta[j])))
+        if(Sys.info()['sysname'] == "Linux")
+        {
+          sequences = rbind(sequences, data.frame(file.name = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], fasta.name = names(fasta[j])))
+          
+        }else
+        {
+          sequences = rbind(sequences, data.frame(file.name = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], fasta.name = names(fasta[j])))
+          
+        }
+        
         strsplit(fasta.list[i], split = "/")[[1]]
       }
     }
@@ -261,7 +292,7 @@ if(hor.only)
                 temp.folder = execution.path, 
                 assemblyName = sequences$file.name[i], 
                 chr.name = sequences$fasta.name[i],
-                mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
+                mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
                 hor.c.script.path = hor.c.script.path,
                 class.name = class.name.for.HOR)
     gc()
@@ -277,10 +308,10 @@ if(hor.only)
                         class.name = class.name.for.HOR)
     #plot repetitiveness per chromosome
     plot.repetitiveness(temp.folder = execution.path, 
-                                 assemblyName = sequences$file.name[i], 
-                                 chr.name = sequences$fasta.name[i],
-                                 hor.c.script.path = hor.c.script.path,
-                                 class.name = class.name.for.HOR)
+                        assemblyName = sequences$file.name[i], 
+                        chr.name = sequences$fasta.name[i],
+                        hor.c.script.path = hor.c.script.path,
+                        class.name = class.name.for.HOR)
   }
   
   
@@ -351,16 +382,17 @@ write(paste("random seed is: ", random.seed,  sep = ""),
 
 
 
+print("deb1")
 
 
 
 
-
+print(sequences)
 
 
 #identify repeats per chromosome
-foreach(i = 1 : length(fasta.sequence)) %dopar% {
-  #for(i in 1 : length(fasta.sequence)) {  #TODO go back to par
+#foreach(i = 1 : length(fasta.sequence)) %dopar% {
+  for(i in 1 : length(fasta.sequence)) {  #TODO go back to par
   print(Sys.time())
   print(paste("Working on sequence ", i , sep = ""))
   if(!skip.repetitive.regions)
@@ -369,7 +401,7 @@ foreach(i = 1 : length(fasta.sequence)) %dopar% {
     repetitive.regions = Repeat.Identifier(DNA.sequence = fasta.sequence[i], assemblyName = sequences$file.name[i], fasta.name = sequences$fasta.name[i], 
                                            kmer = set.kmer, window = window.size, threshold = set.threshold, mask.small.regions = filter.small.regions, mask.small.repeats = filter.small.repeats,
                                            max.repeat.size = set.max.repeat.size, LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
-                                           tests = 4, temp.folder = execution.path, sequence.template = sequence.templates, mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""))
+                                           tests = 4, temp.folder = execution.path, sequence.template = sequence.templates, mafft.bat.file = paste(installation.path, mafft.local, sep = ""))
     if(typeof(repetitive.regions) == "list")
     {
       if(nrow(repetitive.regions) != 0)
@@ -397,7 +429,10 @@ for(i in 1 : length(fasta.list))
   print(Sys.time())
   print("saving repeats")
   setwd(paste(execution.path, "/", sep = ""))
-  repeat.files = system(paste("find ./", unique(sequences$file.name)[i], "_out", " -name \"Regions*\"", sep = ""), intern = TRUE)
+  print(execution.path)
+  repeat.files = list.files(path = paste("./", unique(sequences$file.name)[i], "_out", sep = ""), pattern = "Regions*", full.names = T)
+  print(repeat.files)
+  #repeat.files = system(paste("find ./", unique(sequences$file.name)[i], "_out", " -name \"Regions*\"", sep = ""), intern = TRUE)
   regions = NULL
   for(j in 1 : length(repeat.files))
   {
@@ -442,7 +477,7 @@ for(i in 1 : length(fasta.list))
                      assemblyName = sequences$file.name[i],
                      fasta.name = sequences$fasta.name[i],
                      LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
-                     mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""))
+                     mafft.bat.file = paste(installation.path, mafft.local, sep = ""))
   
   
 }
@@ -451,10 +486,10 @@ for(i in 1 : length(fasta.sequence))
 {
   #plot edit per chromosome
   plot.edit(temp.folder = execution.path, 
-                      assemblyName = sequences$file.name[i], 
-                      chr.name = sequences$fasta.name[i],
-                      hor.c.script.path = hor.c.script.path,
-                      class.name = class.name.for.HOR)
+            assemblyName = sequences$file.name[i], 
+            chr.name = sequences$fasta.name[i],
+            hor.c.script.path = hor.c.script.path,
+            class.name = class.name.for.HOR)
 }
 gc()
 
@@ -468,14 +503,14 @@ if(class.name.for.HOR != "")
                 temp.folder = execution.path, 
                 assemblyName = sequences$file.name[i], 
                 chr.name = sequences$fasta.name[i],
-                mafft.bat.file = paste(installation.path, "/src/mafft-linux64/mafft.bat", sep = ""),
+                mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
                 hor.c.script.path = hor.c.script.path,
                 class.name = class.name.for.HOR)
     gc()
   } 
   
- 
-
+  
+  
   for(i in 1 : length(fasta.sequence))
   {
     #do repetitiveness per chromosome
