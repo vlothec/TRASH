@@ -36,7 +36,6 @@ if(Sys.info()['sysname'] == "Linux")
   }
 }
 
-
 installation.path = thisFile()
 installation.path = strsplit(installation.path, split = "/")[[1]]
 if(Sys.info()['sysname'] == "Linux")
@@ -52,6 +51,9 @@ print("inst path:")
 print(installation.path)
 lib.path = paste(installation.path, "/libs", sep = "")
 
+print("lib.path:")
+print(lib.path)
+
 if(!dir.exists(lib.path))
 {
   dir.create(lib.path)
@@ -61,7 +63,6 @@ if(change.lib.paths)
 {
   .libPaths(lib.path)
 }
-
 
 print("loading remotes")
 if(!require("remotes", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1]))
