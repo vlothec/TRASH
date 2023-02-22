@@ -1,0 +1,43 @@
+This is a debug file
+generating consensus for region 1
+after binding tempP i tempM
+overlaps done, checking strand
+aligning
+mafft
+generating consensus for region 2
+after binding tempP i tempM
+overlaps done, checking strand
+aligning
+mafft
+generating consensus for region 3
+after binding tempP i tempM
+overlaps done, checking strand
+aligning
+mafft
+generating consensus for region 4
+after binding tempP i tempM
+overlaps done, checking strand
+aligning
+mafft
+generating consensus for region 5
+after binding tempP i tempM
+overlaps done, checking strand
+aligning
+mafft
+generating consensus for region 6
+after binding tempP i tempM
+overlaps done, checking strand
+aligning
+mafft
+generating consensus for region 7
+after binding tempP i tempM
+overlaps done, checking strand
+aligning
+mafft
+generating consensus for region 8
+after binding tempP i tempM
+overlaps done, checking strand
+aligning
+mafft
+writing out repeats
+This is a debug file

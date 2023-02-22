@@ -1,0 +1,71 @@
+starting the main function CP068268_39050443_39150442.fa CP068268_39050443_39150442
+Checking windows of sequence CP068268_39050443_39150442, window 100/143
+sequence CP068268_39050443_39150442, window 143/143
+sequence CP068268_39050443_39150442 finished scoring windows
+sequence CP068268_39050443_39150442 finished calculating regions
+Step 1 (identify windows) done
+calculating distances on region 1/7 region size: 3500
+calculating distances on region 2/7 region size: 5600
+calculating distances on region 3/7 region size: 11200
+calculating distances on region 4/7 region size: 13300
+calculating distances on region 5/7 region size: 8400
+calculating distances on region 6/7 region size: 6300
+calculating distances on region 7/7 region size: 12600
+sequence CP068268_39050443_39150442: finished calculating main distances
+testing random N samples from region 1/7 window size: 3499
+fix data type
+next loop i: 1 nrow data = 7
+testing random N samples from region 2/7 window size: 5599
+fix data type
+next loop i: 2 nrow data = 7
+testing random N samples from region 3/7 window size: 11199
+fix data type
+next loop i: 3 nrow data = 7
+testing random N samples from region 4/7 window size: 13299
+find empty space  4  with space left:  3985
+found empty space last time 4  with space left:  3985
+calculating distances on region 8/8 region size: 3730
+new row: , 8, CP068268_39050443_39150442, 57170, 60899, 21.3233082706767, 172, , 0
+new old region split d: 1
+new row: , 8, CP068268_39050443_39150442, 47600, 57170, 21.3233082706767, 172, TCTAGTTTTTATCTGAAGATATTTTCTTTTTCACCATAGGCCTCAATGAGCTCCCAAATGTCCATTCGCAGAATGTACAAAAACAGTGTTTCCAAACTGCTGAATCAAAAGAAAGGTTTAACTCTGTGAGATGAATGCACACATCACAAAGCAGTTTCTCAGAAAGCTTCTT, 0
+fix data type
+next loop i: 4 nrow data = 9
+testing random N samples from region 5/9 window size: 8399
+fix data type
+next loop i: 5 nrow data = 9
+testing random N samples from region 6/9 window size: 6299
+fix data type
+next loop i: 6 nrow data = 9
+testing random N samples from region 7/9 window size: 12599
+fix data type
+next loop i: 7 nrow data = 9
+testing random N samples from region 8/9 window size: 3729
+fix data type
+next loop i: 8 nrow data = 9
+remove regions id: 4
+out of the primary consensus loop
+finished test random Nmers of CP068268_39050443_39150442.fa: CP068268_39050443_39150442
+on CP068268_39050443_39150442, generating consensus for region 1/8 window size: 3499
+on CP068268_39050443_39150442, generating consensus for region 2/8 window size: 5599
+on CP068268_39050443_39150442, generating consensus for region 3/8 window size: 11199
+on CP068268_39050443_39150442, generating consensus for region 4/8 window size: 8399
+on CP068268_39050443_39150442, generating consensus for region 5/8 window size: 6299
+on CP068268_39050443_39150442, generating consensus for region 6/8 window size: 12599
+on CP068268_39050443_39150442, generating consensus for region 7/8 window size: 3729
+on CP068268_39050443_39150442, generating consensus for region 8/8 window size: 9570
+calculating edit distance
+plotting edit 
+starting the main function CP068268_39050443_39150442.fa CP068268_39050443_39150442
+Checking windows of sequence CP068268_39050443_39150442, window 100/143
+sequence CP068268_39050443_39150442, window 143/143
+sequence CP068268_39050443_39150442 finished scoring windows
+sequence CP068268_39050443_39150442 finished calculating regions
+Step 1 (identify windows) done
+calculating distances on region 1/7 region size: 3500
+calculating distances on region 2/7 region size: 5600
+calculating distances on region 3/7 region size: 11200
+calculating distances on region 4/7 region size: 13300
+calculating distances on region 5/7 region size: 8400
+calculating distances on region 6/7 region size: 6300
+calculating distances on region 7/7 region size: 12600
+sequence CP068268_39050443_39150442: finished calculating main distances

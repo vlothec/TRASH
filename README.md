@@ -39,9 +39,11 @@ Running TRASH_install.sh can also check the installation after it's unpacked/ins
 TRASH requires at least one fasta file as an input (with ".fa", ".fna" or ".fasta" extensions). Multiple files can be provided as separate arguments or by merging sequences into one fasta file. There is no limit on the amount of sequences provided.
 ### Simple run:
 ```
-TRASH_run.sh assembly.fa
+TRASH_run.sh assembly.fa --o output.path
 ```
-This will generate 3 files: "RepetitiveRegions_assembly.fa.csv", "Repeats_assembly.fa.csv" and "Repeats_assembly.fa.gff" in the directory from which the command was run. Additionally, 3 directories will be created: "plots_assembly.fa" with circos plots and "assembly.fa_out" with temporary files that can be removed.
+This will run TRASH with default settings in the output.path directory. 
+### Example run
+**/example_run** contains fasta sequence and results of a TRASH run on an extraction from the chromosome 10 from CHM13 human genome, coordiantes 39,050,443:39,150,442. It includes several alpha satellite arrays.
 
 ## Additional options:
 
@@ -85,17 +87,20 @@ CEN180,178,AGTATAAGAACTTAAACCGCAACCGATCTTAAAAGCCTAAGTAGTGTTTCCTTGTTAGAAGACACAAAG
 
 ## Output
 
-**"RepetitiveRegions_assembly.fa.csv"**
-Table with regions (arrays) containing tandem repeats with information on their consensus sequence, period size and class (family) when sequence templates were provided.
-
-**"Repeats_assembly.fa.csv"**
+**"all.repeats.from.assembly.fa.csv"**
 Table with repeats identified, their start and end positions, class (when applicable, if not assigned it will be "NA"), sequence (on the positive strand) and strand information (when repeats are assigned to a class they will be identified according to the provided template, thus possibly placing them on the negative strand, in this case an additional column will contain sequence information on the negative strand).
 
-**"Repeats_assembly.fa.gff"**
+**"TRASH_assembly.fa.gff"**
 GFF file (https://www.ensembl.org/info/website/upload/gff.html) containing the same information as the .csv repeats file but in a format that can be widely used for genome annotation.
 
 **"plots/assembly_circos.pdf"**
 Circos plot showing information contained in the "RepetitiveRegions_assembly.fa.csv" file.
+
+**"Summary.of.repetitive.regions_assembly.fa.csv"**
+Table with regions (arrays) containing tandem repeats with information on their consensus sequence, period size and class (family) when sequence templates were provided.
+
+**temp.all.repeats.from.assembly.fa.csv**
+Temporary file with repeats, can be safely removed if the main file is created. Can be used for troubleshooting
 
 Optional: **"HOR/HOR_plot_assembly.fasta_chrName_class.png"**
 When HORs were calculated, these are dot plots showing the start locations of HOR blocks identified.
@@ -103,8 +108,12 @@ When HORs were calculated, these are dot plots showing the start locations of HO
 Optional: **"HORs_assembly.fasta_chrName_class.png.csv"**
 Table with HORs identified. Each row is a pair of HOR blocks, each with their start and end coordinate, number of divergent positions between them ("total variant") and direction (1 means the blocks are in the same orientation, i.e. "head to tail", while 2 means they are on opposite strands, "head to head").
 
+**/assembly_out** directory with temporary files used during the run that can be removed
+**/plots** directory with circos plots, edit.distance plots and HOR.score plots
+Optional: **/HOR** directory with Higher Order Repeat files
 
-### Windows
+
+## Windows
 Windows functionality has not been fully tested (HOR module)
 ```
 git clone https://github.com/vlothec/TRASH
