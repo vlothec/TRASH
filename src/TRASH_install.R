@@ -9,6 +9,11 @@ if(length(cmd.Args) > 0)
   } 
 }
 
+if(as.numeric(strsplit(strsplit(R.version.string, ' ')[[1]][3], "[.]")[[1]][1]) < 4)
+{
+  stop("R version found is lower than 4")
+}
+
 print("start")
 if(Sys.info()['sysname'] == "Linux")
 {
@@ -66,7 +71,7 @@ if(!require("remotes", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPat
 }
 
 print("loading stringr")
-if(!require("stringr", quietly = TRUE, warn.conflicts = FALSE))
+if(!require("stringr", quietly = TRUE, warn.conflicts = FALSE,  lib.loc = .libPaths()[1]))
 {
   if(Sys.info()['sysname'] == "Linux")
   {
@@ -75,7 +80,7 @@ if(!require("stringr", quietly = TRUE, warn.conflicts = FALSE))
   {
     install.packages("stringr", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
   }
-  library("stringr", quietly = TRUE, warn.conflicts = FALSE)
+  library("stringr", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1])
   if(packageVersion("stringr") != "1.4.0")
   {
     print(paste("\"stringr\" library version is different than recommended (1.4.0). Consider installing TRASH in a new folder (see manual)"))
@@ -83,7 +88,7 @@ if(!require("stringr", quietly = TRUE, warn.conflicts = FALSE))
 }
 
 print("loading stringdist")
-if(!require("stringdist", quietly = TRUE, warn.conflicts = FALSE))
+if(!require("stringdist", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1]))
 {
   if(Sys.info()['sysname'] == "Linux")
   {
@@ -93,7 +98,7 @@ if(!require("stringdist", quietly = TRUE, warn.conflicts = FALSE))
     install.packages("stringdist", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
   }
   
-  library("stringdist", quietly = TRUE, warn.conflicts = FALSE)
+  library("stringdist", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1])
   if(packageVersion("stringdist") != "0.9.8")
   {
     print(paste("\"stringdist\" library version is different than recommended (0.9.8). Consider installing TRASH in a new folder (see manual)"))
@@ -111,7 +116,7 @@ if(!require("base"))
     install.packages("base", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
   }
   
-  library("base", quietly = TRUE, warn.conflicts = FALSE)
+  library("base", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1])
   if(packageVersion("base") != "4.0.3")
   {
     print(paste("\"base\" library version is different than recommended (4.0.3). Consider installing TRASH in a new folder (see manual)"))
@@ -119,7 +124,7 @@ if(!require("base"))
 }
 
 print("loading BiocManager")
-if(!require("BiocManager", quietly = TRUE, warn.conflicts = FALSE))
+if(!require("BiocManager", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1]))
 {
   if(Sys.info()['sysname'] == "Linux")
   {
@@ -137,15 +142,15 @@ if(!require("BiocManager", quietly = TRUE, warn.conflicts = FALSE))
 }
 
 print("loading Biostrings")
-if(!require("Biostrings", quietly = TRUE, warn.conflicts = FALSE))
+if(!require("Biostrings", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1]))
 {
   BiocManager::install("Biostrings")
   
-  library("Biostrings", quietly = TRUE, warn.conflicts = FALSE)
+  library("Biostrings", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1])
 }
 
 print("loading circlize")
-if(!require("circlize", quietly = TRUE, warn.conflicts = FALSE))
+if(!require("circlize", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1]))
 {
   if(Sys.info()['sysname'] == "Linux")
   {
@@ -155,7 +160,7 @@ if(!require("circlize", quietly = TRUE, warn.conflicts = FALSE))
     install.packages("circlize", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
   }
   
-  library("circlize", quietly = TRUE, warn.conflicts = FALSE)
+  library("circlize", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1])
   if(packageVersion("circlize") != "0.4.15")
   {
     print(paste("\"circlize\" library version is different than recommended (0.4.15). Consider installing TRASH in a new folder (see manual)"))
@@ -163,7 +168,7 @@ if(!require("circlize", quietly = TRUE, warn.conflicts = FALSE))
 }
 
 print("loading seqinr")
-if(!require("seqinr", quietly = TRUE, warn.conflicts = FALSE))
+if(!require("seqinr", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1]))
 {
   if(Sys.info()['sysname'] == "Linux")
   {
@@ -173,7 +178,7 @@ if(!require("seqinr", quietly = TRUE, warn.conflicts = FALSE))
     install.packages("seqinr", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
   }
   
-  library("seqinr", quietly = TRUE, warn.conflicts = FALSE)
+  library("seqinr", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1])
   if(packageVersion("seqinr") != "4.2.8")
   {
     print(paste("\"seqinr\" library version is different than recommended (4.2.8). Consider installing TRASH in a new folder (see manual)"))
@@ -181,7 +186,7 @@ if(!require("seqinr", quietly = TRUE, warn.conflicts = FALSE))
 }
 
 print("loading doParallel")
-if(!require("doParallel", quietly = TRUE, warn.conflicts = FALSE))
+if(!require("doParallel", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1]))
 {
   if(Sys.info()['sysname'] == "Linux")
   {
@@ -191,7 +196,7 @@ if(!require("doParallel", quietly = TRUE, warn.conflicts = FALSE))
     install.packages("doParallel", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
   }
   
-  library("doParallel", quietly = TRUE, warn.conflicts = FALSE)
+  library("doParallel", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1])
   if(packageVersion("doParallel") != "1.0.17")
   {
     print(paste("\"doParallel\" library version is different than recommended (1.0.17). Consider installing TRASH in a new folder (see manual)"))
