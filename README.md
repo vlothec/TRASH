@@ -6,8 +6,8 @@ Local **kmer** counting finds regions that are repetitive. Windows are scored ba
 
 ## Requirements:
 
-1. Linux OS
-2. R-4.1.3 or newer
+1. Linux OS (for Windows see below)
+2. R-4.1.3 or newer (any R.4+ should work)
 
 ## Installation:
 
@@ -18,7 +18,7 @@ conda create -n name -c conda-forge r-base=4.1.3 zlib
 conda activate name
 ```
 ### Quick and easy:
-Download and unpack TRASH_v1.0.pck.tar.gz which will contain pre-installed image with all required dependancies:
+Download and unpack TRASH_v1.1.tar.gz which will contain pre-installed image with all required dependancies:
 ```
 wget https://github.com/vlothec/TRASH/raw/main/TRASH.v1.1.tar.gz
 tar -xzvf TRASH.v1.1.tar.gz
@@ -33,6 +33,7 @@ cd TRASH
 chmod +x TRASH_install.sh
 TRASH_install.sh
 ```
+Running TRASH_install.sh can also check the installation after it's unpacked/installed
 
 ## Run
 TRASH requires at least one fasta file as an input (with ".fa", ".fna" or ".fasta" extensions). Multiple files can be provided as separate arguments or by merging sequences into one fasta file. There is no limit on the amount of sequences provided.
@@ -110,7 +111,7 @@ git clone https://github.com/vlothec/TRASH
 ```
 extract
 Identify Rscript.exe directory
-navigate to TRASH_v1.1\src directory
+navigate to TRASH\src directory
 install TRASH with:
 ```
 [R installation directory]\Rscript.exe TRASH_install.R
@@ -119,3 +120,4 @@ run TRASH with:
 ```
 [R installation directory]\Rscript.exe TRASH_run.R [run commands]
 ```
+libs.zip are pre-installed Windows libraries that can be downloaded separately
