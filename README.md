@@ -103,15 +103,15 @@ Optional: **"HORs_assembly.fasta_chrName_class.png.csv"**
 Table with HORs identified. Each row is a pair of HOR blocks, each with their start and end coordinate, number of divergent positions between them ("total variant") and direction (1 means the blocks are in the same orientation, i.e. "head to tail", while 2 means they are on opposite strands, "head to head").
 
 
-Windows
-download
+### Windows
+Windows functionality has not been fully tested (HOR module)
 ```
 git clone https://github.com/vlothec/TRASH
 ```
 extract
 Identify Rscript.exe directory
 navigate to TRASH_v1.1\src directory
-run TRASH with:
+install TRASH with:
 ```
 [R installation directory]\Rscript.exe TRASH_install.R
 ```
@@ -119,5 +119,3 @@ run TRASH with:
 ```
 [R installation directory]\Rscript.exe TRASH_run.R [run commands]
 ```
-
-"C:\Program Files\R\R-4.1.3\bin\Rscript.exe" TRASH_run.R --o C:\assemblies\CP068268_39050443_39150442.fa
