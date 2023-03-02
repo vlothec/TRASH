@@ -391,8 +391,8 @@ print(sequences)
 
 
 #identify repeats per chromosome
-#foreach(i = 1 : length(fasta.sequence)) %dopar% {
-  for(i in 1 : length(fasta.sequence)) {  #TODO go back to par
+foreach(i = 1 : length(fasta.sequence)) %dopar% {
+  #for(i in 1 : length(fasta.sequence)) {  #TODO go back to par
   print(Sys.time())
   print(paste("Working on sequence ", i , sep = ""))
   if(!skip.repetitive.regions)
