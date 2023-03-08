@@ -17,13 +17,7 @@ R can be downloaded from https://cloud.r-project.org/ using the instructions pro
 conda create -n name -c conda-forge r-base=4.1.3 zlib
 conda activate name
 ```
-### Quick and easy:
-Download and unpack TRASH_v1.1.tar.gz which will contain pre-installed image with all required dependancies:
-```
-wget https://github.com/vlothec/TRASH/raw/main/TRASH.v1.1.tar.gz
-tar -xzvf TRASH.v1.1.tar.gz
-```
-### A bit longer:
+### TRASH installer:
 Download TRASH and run TRASH_install.sh. This will allow to control whether R packages will be downloaded to a system-default directory or TRASH directory (as in the pre-installed version). Downloaded libraries will be of a specific version, which might cause problems if other versions are already installed.
 
 Adding --def flag to the TRASH_install.sh command will use the default R library path to install new packages. This will require the use of --def flag each time TRASH is run! This is for users that already have multiple R libraries installed and wish to keep the installation to take as little space as possible by avoiding redundant packages.
@@ -34,6 +28,12 @@ chmod +x TRASH_install.sh
 TRASH_install.sh
 ```
 Running TRASH_install.sh can also check the installation after it's unpacked/installed
+### (alternative) All-in-one package:
+Download and unpack TRASH_v1.1.tar.gz which will contain pre-installed image with all required dependancies:
+```
+wget https://github.com/vlothec/TRASH/raw/main/TRASH.v1.1.tar.gz
+tar -xzvf TRASH.v1.1.tar.gz
+```
 
 ## Run
 TRASH requires at least one fasta file as an input (with ".fa", ".fna" or ".fasta" extensions). Multiple files can be provided as separate arguments or by merging sequences into one fasta file. There is no limit on the amount of sequences provided.
