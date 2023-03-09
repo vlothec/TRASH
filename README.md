@@ -50,6 +50,7 @@ The **/example_run** folder contains a test fasta sequence and results of a TRAS
 ```
 --def 			# use the default R packages path.
 --rmtemp 		# remove the "*_out" directory after run completion.
+--simpleplot		# output a plot with repeat coordinates and their sizes for each sequence (additionally to the circos plot).
 --horclass name		# set the name of the repeat family that should be used for HOR calculations, required for the HOR module to be activated.
 --limrepno x		# limit alignment sizes (in bp of total sequence) used during the run to calculate consensus, samples repeats to avoid large alignment operations. 78000 by default
 --horonly x		# skip the repeat identification if performed earlier and only calculate HORs, needs to be used together with -horclass flag.
@@ -66,17 +67,19 @@ The **/example_run** folder contains a test fasta sequence and results of a TRAS
 --seqt path 		# path to the file with repeat family templates, the file needs to be formatted as described below.
 --par x 			# max number of cores used for multithreading, defaults to 1. If set as 0, TRASH will try to register as many cores as there are sequences, or maximum available, whichever is smaller.
 --randomseed x		# set a random seed for reproducibility of the repeat identification, seed from the previous run can be found in “TRASH_YYYYMMDDHHMMSS.out”.
---simpleplot		# output a plot with repeat coordinates and their sizes for each sequence (additionally to the circos plot).
+--N.max.div x       # (monomer splitting method) threshold score above which will look for divisions, the lower, the more loose. 100 by default, meaning the method is turned off.
+--try.until x       # (monomer splitting method) max number of N divisions, the higher the longer repeats can be split. 12 by default
+--smooth.percent x  # (monomer splitting method) smoothing factor for finding the histogram peaks, the higher the wider. 2 by default
 
 ```
 
 
 ## Multithreading
-The script will utilize a maximum of 1 core per fasta sequence (not per file) if available. By default it will use 1 core, which can be controlled with -par flag. 
+The script will utilize a maximum of 1 core per fasta sequence (not per file) if available. By default it will use 1 core, which can be controlled with --par flag. 
 
 
 ## Higher Order Repeat (HOR) analysis
-TRASH is able to calculate HORs defined as multi-monomer repeat duplications. It does not try to create a 1-dimentional description of repeat monomers, but uses a 2-dimentional matrix of identity between repeats to find instances of consecutive rows of high similarity. -minhor and -maxdiv control how many repeats constitute a HOR and what is the maximum divergence score between repeats for them to be part of a HOR.
+TRASH is able to calculate HORs defined as multi-monomer repeat duplications. It does not try to create a 1-dimentional description of repeat monomers, but uses a 2-dimentional matrix of identity between repeats to find instances of consecutive rows of high similarity. --minhor and --maxdiv control how many repeats constitute a HOR and what is the maximum divergence score between repeats for them to be part of a HOR.
 
 
 ## Sequence templates
@@ -112,6 +115,9 @@ A table listing the HORs identified. Each row contains a pair of HOR blocks, eac
 **/assembly_out** Specifies the directory with temporary files used during the run that can be removed
 **/plots** Specifies the directory containing circos plots, edit.distance plots and HOR.score plots 
 Optional: **/HOR** directory with Higher Order Repeat files
+
+## Monomer splitting method
+In some cases, the signal from a multiplication of the base repeat might be stronger than the one from the base repeat itself, resulting in identification of repeats in multimers. This can be addressed by changing the "--N.max.div" flag down from 100. This method is off by default, to not overcorrect repeats that could have internal duplications, but are in their base form already.
 
 
 ## Windows
