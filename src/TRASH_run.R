@@ -57,11 +57,11 @@ arguments = commandArgs(trailingOnly = TRUE)
   min.hor.value = 3
   skip.short.fasta.sequences = 0
   set.kmer = 10 # kmer size used for initial identification of repetitive regions
-  set.threshold = 6 # window repetitiveness score (0-100) threshold
-  set.max.repeat.size = 650 # max size of repeats to be identified
+  set.threshold = 5 # window repetitiveness score (0-100) threshold
+  set.max.repeat.size = 850 # max size of repeats to be identified
   filter.small.regions = 3000 # repetitive windows smaller than this size will be removed (helps getting rid of regions with short duplications)
   filter.small.repeats = 5 # repetitive windows where dominant kmer distance is lower than this value will be removed (for example AT dinucleotide repeats)
-  window.size = 700 # how far apart kmers can be in the initial search for exact matches. No repeats larger than this will be identified
+  window.size = 1000 # how far apart kmers can be in the initial search for exact matches. No repeats larger than this will be identified
   MAX.CHROMOSOMES.TODO = 48 
   hor.only = FALSE
   class.name.for.HOR = ""
@@ -69,6 +69,9 @@ arguments = commandArgs(trailingOnly = TRUE)
   LIMIT.REPEATS.TO.ALIGN = 35600 #in base pairs
   simpleplot = FALSE
   random.seed = NULL
+  N.max.div = 100 #fn_new_distance threshold score above which will look for divisions, the lower, the more loose
+  try.until = 12 #fn_new_distance max number of N divisions, the higher the longer repeats can be split
+  smooth.percent = 2 #fn_new_distance smoothing factor for finding the histogram peaks, the higher the wider
 }
 fasta.list = NULL
 {
@@ -145,6 +148,18 @@ fasta.list = NULL
       else if(arguments[i] == "--par")
       {
         cores.no = as.numeric(arguments[i + 1])
+      }
+      else if(arguments[i] == "--N.max.div")
+      {
+        N.max.div = as.numeric(arguments[i + 1])
+      }
+      else if(arguments[i] == "--max.N.split")
+      {
+        try.until = as.numeric(arguments[i + 1])
+      }
+      else if(arguments[i] == "--smooth.percent")
+      {
+        smooth.percent = as.numeric(arguments[i + 1])
       }
       if(grepl(".fa", arguments[i]) | grepl(".fna", arguments[i]))
       {
@@ -351,7 +366,7 @@ if(PLOTTING.ONLY)
                                     assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], 
                                     fastaDirectory = fasta.list[i], 
                                     only.Chr1_5 = FALSE, 
-                                    single.pngs = TRUE) != 0)
+                                    single.pngs = TRUE, y.max = set.max.repeat.size) != 0)
       {
         print("plotting likely failed")
       }
@@ -401,7 +416,8 @@ foreach(i = 1 : length(fasta.sequence)) %dopar% {
     repetitive.regions = Repeat.Identifier(DNA.sequence = fasta.sequence[i], assemblyName = sequences$file.name[i], fasta.name = sequences$fasta.name[i], 
                                            kmer = set.kmer, window = window.size, threshold = set.threshold, mask.small.regions = filter.small.regions, mask.small.repeats = filter.small.repeats,
                                            max.repeat.size = set.max.repeat.size, LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
-                                           tests = 4, temp.folder = execution.path, sequence.template = sequence.templates, mafft.bat.file = paste(installation.path, mafft.local, sep = ""))
+                                           tests = 6, temp.folder = execution.path, sequence.template = sequence.templates, mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
+                                           N.max.div , try.until, smooth.percent)
     if(typeof(repetitive.regions) == "list")
     {
       if(nrow(repetitive.regions) != 0)
@@ -553,7 +569,7 @@ for(i in 1 : length(fasta.list))
                                   assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], 
                                   fastaDirectory = fasta.list[i], 
                                   only.Chr1_5 = FALSE, 
-                                  single.pngs = TRUE) != 0)
+                                  single.pngs = TRUE, y.max = set.max.repeat.size) != 0)
     {
       print("plotting likely failed")
     }

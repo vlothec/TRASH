@@ -2,12 +2,15 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                              kmer = 12, window = 1000, threshold = 10, mask.small.regions = 1500, mask.small.repeats = 4,
                              max.repeat.size = 500,
                              tests = 5, temp.folder = "",
-                             sequence.template, mafft.bat.file = "", LIMIT.REPEATS.TO.ALIGN = 78000)
+                             sequence.template, mafft.bat.file = "", LIMIT.REPEATS.TO.ALIGN = 78000, N.max.div, try.until, smooth.percent)
 {
   
   #TODO check for all the parameters given into the function that are correct here
   
   print("Repeat Identification new")
+  
+  plot.N.scores = T #debug option
+  
   if(temp.folder == "")
   {
     stop("no temp folder")
@@ -106,7 +109,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
         regions.data.frame = rbind(regions.data.frame, temp)
       }
       
-     
+      
       
       
       ii = ii + 1
@@ -150,11 +153,21 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
       distance = distance[distance > mask.small.repeats]
       if(length(distance) > 0)
       {
-        hist.values = hist(distance, breaks = max(distance), plot = FALSE)
-        regions.data.frame$most.freq.value.N[i] = hist.values$breaks[which.max(hist.values$counts) + 1]
-        png(filename = paste("N val hist initial", i, ".png"))
-        hist(distance, breaks = max(distance), plot = TRUE)
-        dev.off()
+        periodicity = NULL
+        periodicity = new.distance.N(distance, N.max.div , try.until, smooth.percent)
+        if(!is.null(periodicity))
+        {
+          regions.data.frame$most.freq.value.N[i] = periodicity
+          if(plot.N.scores)
+          {
+            hist.values = hist(distance, breaks = max(distance), plot = FALSE)
+            write.csv(x = distance, file = paste("N val dist 1 ", i, ".csv"))
+            png(filename = paste("N val hist 1 ", i, ".png"))
+            hist(distance, breaks = max(distance), plot = TRUE)
+            abline(v = regions.data.frame$most.freq.value.N[i])
+            dev.off()
+          }
+        }
       }
     }
     regions.data.frame = regions.data.frame[regions.data.frame$most.freq.value.N >= mask.small.repeats,]
@@ -208,13 +221,89 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
         #test a number of random substrings to find best representation, remove overlapping 
         for(ii in 1 : tests)
         {
+          match = NULL
           match = matchPattern(pattern = random.sequences[ii], subject = seqC, max.mismatch = maxMis, with.indels = TRUE)
+          
+          temp = data.frame()
           temp = as.data.frame(match)
           if(nrow(temp) > 0)
           {
             temp$start  = start(match)
             temp$end = end(match)
             temp$strand = "+"
+          }
+          
+          match = NULL
+          match = matchPattern(pattern = revCompString(random.sequences[ii]), subject = seqC, max.mismatch = maxMis, with.indels = TRUE)
+          temp2 = data.frame()
+          temp2 = as.data.frame(match)
+          if(nrow(temp2) > 0)
+          {
+            temp2$start  = start(match)
+            temp2$end = end(match)
+            temp2$strand = "+"
+          }
+          
+          temp = rbind(temp,temp2)
+          
+          if(nrow(temp) > 0)
+          {
+            #make sure start coordinate is first and end second
+            temp.start.b = temp$start
+            which.fix = which(temp$start > temp$end)
+            temp$start[which.fix] = temp$end[which.fix]
+            temp$end[which.fix] = temp.start.b[which.fix]
+            temp = temp[order(temp$start, decreasing = F),]
+            
+            write(paste("checking for scattered region with ", nrow(temp), " entries", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+            
+            #sanity check: sometimes in a region with multiple repeat arrays, first identified N is randomly scattered throughout others,
+            #so as a sanity check, hits that are scattered (those that are further away from a neighbor than 1 N / 1.1N bp and don't have
+            # another repeat (on the other side) within N/10 bp).
+            #
+            #Removing them from "temp" array will let divide the region well later. If by some reason only region
+            #that gets filtered out like this remains, it will have all the matches removed, making the "tests" empty,
+            #making the "random.sequence.scores" all 0, subsequently marking the region as "none_identified"
+
+            if(nrow(temp) > 2)
+            {
+              flag.repeats = vector(length = nrow(temp))
+              
+              if((temp$start[2] - temp$end[1]-1) >= ceiling(N/10)) #first
+              {
+                flag.repeats[1] = T
+              }
+              
+              for(temp.ID in 2 : (nrow(temp)-1)) #other
+              {
+                dists.to.others = c((temp$start[temp.ID+1] - temp$end[temp.ID]-1),
+                                    (temp$start[temp.ID] - temp$end[temp.ID-1]-1))
+              
+                if(length(which(dists.to.others >= ceiling(N/1.1))) == 2)
+                {
+                  flag.repeats[temp.ID] = T
+                } else if(length(which(dists.to.others >= ceiling(N/1.1))) == 1)
+                {
+                  if(dists.to.others[order(dists.to.others)][1] >= ceiling(N/10))
+                  {
+                    flag.repeats[temp.ID] = T
+                  }
+                }
+              }
+              
+              if((temp$start[nrow(temp)] - temp$end[nrow(temp)-1]-1) >= ceiling(N/10)) #last
+              {
+                flag.repeats[nrow(temp)] = T
+              }
+              
+              if(length(which(flag.repeats))>0)
+              {
+                temp = temp[-which(flag.repeats),] #remove
+              }
+              
+            }
+            
+            #remove overlapping now
             iii = nrow(temp)
             random.sequence.counts[ii] = 0
             if(iii > 0)
@@ -229,7 +318,10 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
               }
               iii = iii - 1
             }
-            if(nrow(temp) > 1)
+            write(paste("after checking, ", nrow(temp), " entries left", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+            
+            
+            if(nrow(temp) > 2)
             {
               write.csv(temp, file = paste(temp.folder, "/", paste(assemblyName, "_out", sep = ""), "/temp1/", fasta.name, "_", ii, ".csv", sep = ""), row.names = FALSE)
               random.sequence.scores[ii] = sum(temp$end - temp$start)
@@ -302,11 +394,16 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
             break()
           }
         }
+        
         if(regions.data.frame$consensus.primary[i] == "") #in case all scores were rubbish
         {
           regions.data.frame$consensus.primary[i] = "none_identified"
           regions.data.frame$consensus.count[i] = 0
         }
+        
+        
+        
+        
         new.regions.starts = NULL
         new.regions.ends = NULL
         #if there was some coverage, but not all, separate the identified region and make a new one to identify the next class of repeats
@@ -315,12 +412,12 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           if(regions.data.frame$consensus.primary[i] != "")
           {
             
-            max.score.for.region = nchar(seqC)
-            identified.score = random.sequence.scores[which.max(random.sequence.scores)]
-            if(is.numeric(identified.score) & is.numeric(max.score.for.region))
+            max.score.for.region = nchar(seqC) #seqC is the sequence of the whole region at index i
+            identified.score = random.sequence.scores[which.max(random.sequence.scores)] #this score is just a coverage of repeats over seqC
+            if(is.numeric(identified.score) && is.numeric(max.score.for.region))
             {
-              leftover.space = max.score.for.region - identified.score
-              if(identified.score > mask.small.regions)#see if total identified space is more than minimum region size
+              leftover.space = max.score.for.region - identified.score 
+              if(identified.score > mask.small.regions)#see if total identified space is more than minimum region size (regardless of whether its continuous or not)
               {
                 if(leftover.space > mask.small.regions) #see if total leftover space is more than minimum region size
                 {
@@ -346,6 +443,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                         new.index = nrow(regions.data.frame) + 1
                         
                         seqB = str_sub(DNA.sequence, start.new.region, end.new.region)
+                        #write.fasta(sequences = seqB, names = paste(new.index, nchar(seqB), sep = ""), file.out = paste(new.index, nchar(seqB), sep = ""), as.string = T) #TODO remove after testing
                         write(paste("calculating distances on region ", new.index, "/", (nrow(regions.data.frame) + 1), " region size: ", nchar(seqB), sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
                         
                         distance = vector(mode = "numeric", length =  nchar(seqB))
@@ -357,13 +455,25 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                         }
                         distance = distance[!is.na(distance)]
                         distance = distance[distance > mask.small.repeats]
+                        hist.values = NULL
+                        new.distance.N = NULL
                         if(length(distance) > 0)
                         {
-                          hist.values = hist(distance, breaks = max(distance), plot = FALSE)
-                          new.distance.N = hist.values$breaks[which.max(hist.values$counts) + 1]
-                          png(filename = paste("N val hist second", s, ".png"))
-                          hist(distance, breaks = max(distance), plot = TRUE)
-                          dev.off()
+                          periodicity = NULL
+                          new.distance.N = new.distance.N(distance, N.max.div , try.until, smooth.percent)
+                          if(!is.null(new.distance.N))
+                          {
+                            #regions.data.frame$most.freq.value.N[i] = new.distance.N #this turn off
+                            if(plot.N.scores)
+                            {
+                              hist.values = hist(distance, breaks = max(distance), plot = FALSE)
+                              write.csv(x = distance, file = paste("N val dist 2 ", i, ".csv"))
+                              png(filename = paste("N val hist 2 ", i, ".png"))
+                              hist(distance, breaks = max(distance), plot = TRUE)
+                              abline(v = new.distance.N)
+                              dev.off()
+                            }
+                          }
                         }
                         
                         if(!is.na(new.distance.N) & !is.null(new.distance.N) & new.distance.N > 0)
@@ -408,6 +518,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                       new.index = nrow(regions.data.frame) + 1
                       
                       seqB = str_sub(DNA.sequence, start.new.region, end.new.region)
+                      #write.fasta(sequences = seqB, names = paste(new.index, nchar(seqB), sep = ""), file.out = paste(new.index, nchar(seqB), sep = ""), as.string = T) #TODO remove after testing
                       write(paste("calculating distances on region ", new.index, "/", (nrow(regions.data.frame) + 1), " region size: ", nchar(seqB), sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
                       
                       distance = vector(mode = "numeric", length =  nchar(seqB))
@@ -419,17 +530,31 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                       }
                       distance = distance[!is.na(distance)]
                       distance = distance[distance > mask.small.repeats]
+                      hist.values = NULL
+                      new.distance.N = NULL
                       if(length(distance) > 0)
                       {
-                        hist.values = hist(distance, breaks = max(distance), plot = FALSE)
-                        new.distance.N = hist.values$breaks[which.max(hist.values$counts) + 1]
-                        png(filename = paste("N val hist third", i, ".png"))
-                        hist(distance, breaks = max(distance), plot = TRUE)
-                        dev.off()
+                        periodicity = NULL
+                        new.distance.N = new.distance.N(distance, N.max.div , try.until, smooth.percent)
+                        if(!is.null(new.distance.N))
+                        {
+                          #regions.data.frame$most.freq.value.N[i] = new.distance.N #this turn off
+                          if(plot.N.scores)
+                          {
+                            hist.values = hist(distance, breaks = max(distance), plot = FALSE)
+                            write.csv(x = distance, file = paste("N val dist 3 ", i, ".csv"))
+                            png(filename = paste("N val hist 3 ", i, ".png"))
+                            hist(distance, breaks = max(distance), plot = TRUE)
+                            abline(v = new.distance.N)
+                            dev.off()
+                          }
+                        }
                       }
                       
                       if(!is.na(new.distance.N) & !is.null(new.distance.N) & new.distance.N > 0)
                       {
+                        write(paste("new N: ", new.distance.N, sep = " "),
+                              file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
                         write(paste("new row: ", new.index, 
                                     fasta.name, 
                                     start.new.region,
@@ -454,6 +579,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
             }
           }
         }
+        
+        
         regions.data.frame$start = as.numeric(regions.data.frame$start)
         regions.data.frame$end = as.numeric(regions.data.frame$end)
         regions.data.frame$index = as.numeric(regions.data.frame$index)
@@ -462,7 +589,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
         regions.data.frame$consensus.count = as.numeric(regions.data.frame$consensus.count)
         
         
-        
+        #find which regions were divided and delete the original record
         if(length(new.regions.starts) > 0)
         {
           old.start = start.repetitive.region
@@ -536,6 +663,9 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
       }
       i = i + 1
     }
+    regions.data.frame$width = regions.data.frame$end - regions.data.frame$start
+    regions.data.frame$name[regions.data.frame$width < mask.small.regions] = "REMOVE_ROW"
+    
     write(paste("remove regions id: ", which(regions.data.frame$name == "REMOVE_ROW"), sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
     
     if(length(which(regions.data.frame$name == "REMOVE_ROW")) > 0)
@@ -560,6 +690,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
     regions.data.frame$fasta.name = as.character(fasta.name)
   }
   
+  write(paste("hash each primary consensus", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
+  
   #hash each primary consensus
   for(i in 1 : nrow(regions.data.frame))
   {
@@ -571,6 +703,8 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
       }
     }
   }
+  
+  write(paste("shift the primary consensus", sep = ""), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".out.txt", sep = ""), append = TRUE)
   
   #shift the primary consensus sequences to match a given sequence, only those regions with N within a given range
   regions.data.frame$class = ""
@@ -724,7 +858,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           
           ########## handle overlaps
           primary.size = nchar(regions.data.frame$consensus.primary[i])
-          if(nrow(match) > 0)
+          if(exists(x = "match") && !is.null(match) && !is.na(match) && nrow(match) > 0)
           {
             match = match[order(match$start),]
             iii = nrow(match)
@@ -756,7 +890,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           write(paste("overlaps done, checking strand", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
           
           
-          if(nrow(match) > 0)
+          if(exists(x = "match") && !is.null(match) && !is.na(match) && nrow(match) > 0)
           {
             for(ii in 1 : nrow(match))
             {
@@ -775,11 +909,22 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
             match$region.name = paste(assemblyName, fasta.name, sep = "_")
             
           }
+          write(paste("adding repeats number", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
+          
+          
+          if(exists(x = "match") && !is.null(match) && !is.na(match) && nrow(match) > 0)
+          {
+            repeats.identified[i] = nrow(match)
+          } else
+          {
+            repeats.identified[i] = 0
+          }
+          
           
           write(paste("aligning", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
           
           #align, need more than 1 sequence
-          if(nrow(match) > 1)
+          if(exists(x = "match") && !is.null(match) && !is.na(match) && nrow(match) > 1)
           {
             N = regions.data.frame$most.freq.value.N[i]
             if((nrow(match) * N) > LIMIT.REPEATS.TO.ALIGN)
@@ -825,7 +970,6 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
               }
               
               
-              repeats.identified[i] = length(alignment$seq)
               
               consensus.secondary[i] = consensusA
               remove(consensusA)

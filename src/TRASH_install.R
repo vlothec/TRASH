@@ -250,7 +250,12 @@ if(Sys.info()['sysname'] == "Linux")
     warning("neither mafft executable nor package found \nmake sure mafft is downloaded in the /src directory \nhttps://mafft.cbrc.jp/alignment/software/mafft-7.490-linux.tgz\nor unable to download")
   }
 }
-
+if(Sys.info()['sysname'] == "Linux")
+{
+  print("Adding HOR script exe permission")
+  
+  system(paste("chmod +x ", installation.path, "/src/HOR.V3.3", sep = ""), intern = TRUE)
+}
 
 
 print("Checking R library installation")
