@@ -136,4 +136,4 @@ run TRASH with:
 ```
 [R installation directory]\Rscript.exe TRASH_run.R [run commands]
 ```
-libs.zip are pre-installed Windows libraries that can be downloaded separately
+libs.zip are pre-installed Windows libraries that can be unpacked directly into /libs directory
