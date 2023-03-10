@@ -178,9 +178,11 @@ fasta.list = NULL
   }
   if(Sys.info()['sysname'] != "Linux")
   {
+    print(Sys.info()['sysname'])
     print("Only Linux OS tested")
   } 
 }
+
 
 
 if(change.lib.paths)
@@ -199,7 +201,8 @@ suppressPackageStartupMessages(library(base, quietly = TRUE))
 suppressPackageStartupMessages(library(Biostrings, quietly = TRUE))
 suppressPackageStartupMessages(library(seqinr, quietly = TRUE))
 suppressPackageStartupMessages(library(doParallel, quietly = TRUE))
-suppressPackageStartupMessages(library(circlize, quietly = TRUE))   #TODO add to the installer v0.4.15
+suppressPackageStartupMessages(library(circlize, quietly = TRUE))
+
 if(Sys.info()['sysname'] == "Linux")
 {
   mafft.local = "/src/mafft-linux64/mafft.bat"
@@ -242,17 +245,15 @@ print(fasta.list)
       if(nchar(fasta[j]) >= skip.short.fasta.sequences)
       {
         fasta.sequence = c(fasta.sequence,toupper(fasta[j]))
-        if(Sys.info()['sysname'] == "Linux")
+        if(Sys.info()['sysname'] == "Windows")
         {
-          sequences = rbind(sequences, data.frame(file.name = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], fasta.name = names(fasta[j])))
+          sequences = rbind(sequences, data.frame(file.name = strsplit(fasta.list[i], split = "\\\\")[[1]][length(strsplit(fasta.list[i], split = "\\\\")[[1]])], fasta.name = names(fasta[j])))
           
         }else
         {
           sequences = rbind(sequences, data.frame(file.name = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], fasta.name = names(fasta[j])))
           
         }
-        
-        strsplit(fasta.list[i], split = "/")[[1]]
       }
     }
   }
@@ -300,18 +301,35 @@ if(hor.only)
   print("calculating HORs")
   
   #do HORs per chromosome
-  foreach(i = 1 : length(fasta.sequence)) %dopar% {  
-    #for(i in 1 : length(fasta.sequence)) {
-    HOR.wrapper(threshold = 5, 
-                cutoff = 2, 
-                temp.folder = execution.path, 
-                assemblyName = sequences$file.name[i], 
-                chr.name = sequences$fasta.name[i],
-                mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
-                hor.c.script.path = hor.c.script.path,
-                class.name = class.name.for.HOR)
-    gc()
-  } 
+  if(Sys.info()['sysname'] == "Windows")
+  {
+    
+    for(i in 1 : length(fasta.sequence)) {
+      HOR.wrapper(threshold = 5, 
+                  cutoff = 2, 
+                  temp.folder = execution.path, 
+                  assemblyName = sequences$file.name[i], 
+                  chr.name = sequences$fasta.name[i],
+                  mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
+                  hor.c.script.path = hor.c.script.path,
+                  class.name = class.name.for.HOR)
+      gc()
+    } 
+  } else
+  {
+    foreach(i = 1 : length(fasta.sequence)) %dopar% {  
+      HOR.wrapper(threshold = 5, 
+                  cutoff = 2, 
+                  temp.folder = execution.path, 
+                  assemblyName = sequences$file.name[i], 
+                  chr.name = sequences$fasta.name[i],
+                  mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
+                  hor.c.script.path = hor.c.script.path,
+                  class.name = class.name.for.HOR)
+      gc()
+    } 
+  }
+  
   
   for(i in 1 : length(fasta.sequence))
   {
@@ -397,39 +415,59 @@ write(paste("random seed is: ", random.seed,  sep = ""),
 
 
 
-print("deb1")
-
-
-
+print("Sequences to analyse:")
 
 print(sequences)
 
-
 #identify repeats per chromosome
-foreach(i = 1 : length(fasta.sequence)) %dopar% {
-  #for(i in 1 : length(fasta.sequence)) {  #TODO go back to par
-  print(Sys.time())
-  print(paste("Working on sequence ", i , sep = ""))
-  if(!skip.repetitive.regions)
-  {
-    repetitive.regions = NULL
-    repetitive.regions = Repeat.Identifier(DNA.sequence = fasta.sequence[i], assemblyName = sequences$file.name[i], fasta.name = sequences$fasta.name[i], 
-                                           kmer = set.kmer, window = window.size, threshold = set.threshold, mask.small.regions = filter.small.regions, mask.small.repeats = filter.small.repeats,
-                                           max.repeat.size = set.max.repeat.size, LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
-                                           tests = 6, temp.folder = execution.path, sequence.template = sequence.templates, mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
-                                           N.max.div , try.until, smooth.percent)
-    if(typeof(repetitive.regions) == "list")
+if(Sys.info()['sysname'] == "Windows")
+{
+  for(i in 1 : length(fasta.sequence)) {  
+    print(Sys.time())
+    print(paste("Working on sequence ", i , sep = ""))
+    if(!skip.repetitive.regions)
     {
-      if(nrow(repetitive.regions) != 0)
+      repetitive.regions = NULL
+      repetitive.regions = Repeat.Identifier(DNA.sequence = fasta.sequence[i], assemblyName = sequences$file.name[i], fasta.name = sequences$fasta.name[i], 
+                                             kmer = set.kmer, window = window.size, threshold = set.threshold, mask.small.regions = filter.small.regions, mask.small.repeats = filter.small.repeats,
+                                             max.repeat.size = set.max.repeat.size, LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
+                                             tests = 6, temp.folder = execution.path, sequence.template = sequence.templates, mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
+                                             N.max.div , try.until, smooth.percent)
+      if(typeof(repetitive.regions) == "list")
       {
-        write.csv(x = repetitive.regions, file = paste(execution.path, "/", sequences$file.name[i], "_out/Regions_", sequences$file.name[i], "_", sequences$fasta.name[i], ".csv", sep = ""), row.names = FALSE)
+        if(nrow(repetitive.regions) != 0)
+        {
+          write.csv(x = repetitive.regions, file = paste(execution.path, "/", sequences$file.name[i], "_out/Regions_", sequences$file.name[i], "_", sequences$fasta.name[i], ".csv", sep = ""), row.names = FALSE)
+        }
       }
     }
   }
-  gc()
-  
-  print(paste("Finished working on sequence ", i , sep = ""))
+} else
+{
+  foreach(i = 1 : length(fasta.sequence)) %dopar% {
+    print(Sys.time())
+    print(paste("Working on sequence ", i , sep = ""))
+    if(!skip.repetitive.regions)
+    {
+      repetitive.regions = NULL
+      repetitive.regions = Repeat.Identifier(DNA.sequence = fasta.sequence[i], assemblyName = sequences$file.name[i], fasta.name = sequences$fasta.name[i], 
+                                             kmer = set.kmer, window = window.size, threshold = set.threshold, mask.small.regions = filter.small.regions, mask.small.repeats = filter.small.repeats,
+                                             max.repeat.size = set.max.repeat.size, LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
+                                             tests = 6, temp.folder = execution.path, sequence.template = sequence.templates, mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
+                                             N.max.div , try.until, smooth.percent)
+      if(typeof(repetitive.regions) == "list")
+      {
+        if(nrow(repetitive.regions) != 0)
+        {
+          write.csv(x = repetitive.regions, file = paste(execution.path, "/", sequences$file.name[i], "_out/Regions_", sequences$file.name[i], "_", sequences$fasta.name[i], ".csv", sep = ""), row.names = FALSE)
+        }
+      }
+    }
+  }
 } 
+gc()
+
+print(paste("Finished working on sequence ", i , sep = ""))
 
 
 
@@ -462,7 +500,7 @@ for(i in 1 : length(fasta.list))
   write.csv(x = regions, file = paste(execution.path, "/Summary.of.repetitive.regions.", unique(sequences$file.name)[i], ".csv", sep = ""), quote = FALSE)
   
   
-  extract.all.repeats(temp.folder = execution.path, assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])])
+  extract.all.repeats(temp.folder = execution.path, assemblyName = unique(sequences$file.name)[i])
   
   gc()
   
@@ -513,17 +551,33 @@ if(class.name.for.HOR != "")
 {
   
   #do HORs per chromosome
-  foreach(i = 1 : length(fasta.sequence)) %dopar% {
-    HOR.wrapper(threshold = max.divergence.value, 
-                cutoff = min.hor.value, 
-                temp.folder = execution.path, 
-                assemblyName = sequences$file.name[i], 
-                chr.name = sequences$fasta.name[i],
-                mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
-                hor.c.script.path = hor.c.script.path,
-                class.name = class.name.for.HOR)
-    gc()
-  } 
+  if(Sys.info()['sysname'] == "Windows")
+  {
+    for(i in 1 : length(fasta.sequence)) {
+      HOR.wrapper(threshold = max.divergence.value, 
+                  cutoff = min.hor.value, 
+                  temp.folder = execution.path, 
+                  assemblyName = sequences$file.name[i], 
+                  chr.name = sequences$fasta.name[i],
+                  mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
+                  hor.c.script.path = hor.c.script.path,
+                  class.name = class.name.for.HOR)
+    }
+  } else
+  {
+    foreach(i = 1 : length(fasta.sequence)) %dopar% {
+      HOR.wrapper(threshold = max.divergence.value, 
+                  cutoff = min.hor.value, 
+                  temp.folder = execution.path, 
+                  assemblyName = sequences$file.name[i], 
+                  chr.name = sequences$fasta.name[i],
+                  mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
+                  hor.c.script.path = hor.c.script.path,
+                  class.name = class.name.for.HOR)
+    } 
+  }
+  gc()
+  
   
   
   

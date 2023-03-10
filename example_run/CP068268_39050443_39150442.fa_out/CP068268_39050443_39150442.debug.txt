@@ -40,4 +40,3 @@ overlaps done, checking strand
 aligning
 mafft
 writing out repeats
-This is a debug file

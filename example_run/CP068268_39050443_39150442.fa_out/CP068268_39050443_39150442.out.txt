@@ -55,17 +55,3 @@ on CP068268_39050443_39150442, generating consensus for region 7/8 window size: 
 on CP068268_39050443_39150442, generating consensus for region 8/8 window size: 9570
 calculating edit distance
 plotting edit 
-starting the main function CP068268_39050443_39150442.fa CP068268_39050443_39150442
-Checking windows of sequence CP068268_39050443_39150442, window 100/143
-sequence CP068268_39050443_39150442, window 143/143
-sequence CP068268_39050443_39150442 finished scoring windows
-sequence CP068268_39050443_39150442 finished calculating regions
-Step 1 (identify windows) done
-calculating distances on region 1/7 region size: 3500
-calculating distances on region 2/7 region size: 5600
-calculating distances on region 3/7 region size: 11200
-calculating distances on region 4/7 region size: 13300
-calculating distances on region 5/7 region size: 8400
-calculating distances on region 6/7 region size: 6300
-calculating distances on region 7/7 region size: 12600
-sequence CP068268_39050443_39150442: finished calculating main distances
