@@ -2,14 +2,15 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                              kmer = 12, window = 1000, threshold = 10, mask.small.regions = 1500, mask.small.repeats = 4,
                              max.repeat.size = 500,
                              tests = 5, temp.folder = "",
-                             sequence.template, mafft.bat.file = "", LIMIT.REPEATS.TO.ALIGN = 78000, N.max.div, try.until, smooth.percent)
+                             sequence.template, mafft.bat.file = "", LIMIT.REPEATS.TO.ALIGN = 78000, N.max.div, 
+                             try.until, smooth.percent, plot.N = F)
 {
   
   #TODO check for all the parameters given into the function that are correct here
   
   print("Repeat Identification new")
   
-  plot.N.scores = T #debug option
+  plot.N.scores = plot.N #debug option
   
   if(temp.folder == "")
   {
@@ -154,7 +155,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
       if(length(distance) > 0)
       {
         periodicity = NULL
-        periodicity = new.distance.N(distance, N.max.div , try.until, smooth.percent)
+        periodicity = new.distance.N(plot = plot.N, distance, N.max.div , try.until, smooth.percent)
         if(!is.null(periodicity))
         {
           regions.data.frame$most.freq.value.N[i] = periodicity
@@ -460,7 +461,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                         if(length(distance) > 0)
                         {
                           periodicity = NULL
-                          new.distance.N = new.distance.N(distance, N.max.div , try.until, smooth.percent)
+                          new.distance.N = new.distance.N(plot = plot.N, distance, N.max.div , try.until, smooth.percent)
                           if(!is.null(new.distance.N))
                           {
                             #regions.data.frame$most.freq.value.N[i] = new.distance.N #this turn off
@@ -535,7 +536,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
                       if(length(distance) > 0)
                       {
                         periodicity = NULL
-                        new.distance.N = new.distance.N(distance, N.max.div , try.until, smooth.percent)
+                        new.distance.N = new.distance.N(plot = plot.N, distance, N.max.div , try.until, smooth.percent)
                         if(!is.null(new.distance.N))
                         {
                           #regions.data.frame$most.freq.value.N[i] = new.distance.N #this turn off

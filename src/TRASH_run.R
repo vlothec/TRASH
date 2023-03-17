@@ -53,8 +53,8 @@ arguments = commandArgs(trailingOnly = TRUE)
   skip.repetitive.regions = FALSE
   change.lib.paths = TRUE
   cores.no = 1
-  max.divergence.value = 5
-  min.hor.value = 3
+  max.divergence.value = 7 # max variants allowed for HOR identification
+  min.hor.value = 3 #HORs of shorter sizes than this in monomers will not be saved 
   skip.short.fasta.sequences = 0
   set.kmer = 10 # kmer size used for initial identification of repetitive regions
   set.threshold = 5 # window repetitiveness score (0-100) threshold
@@ -72,6 +72,7 @@ arguments = commandArgs(trailingOnly = TRUE)
   N.max.div = 100 #fn_new_distance threshold score above which will look for divisions, the lower, the more loose
   try.until = 12 #fn_new_distance max number of N divisions, the higher the longer repeats can be split
   smooth.percent = 2 #fn_new_distance smoothing factor for finding the histogram peaks, the higher the wider
+  plot.N = F #whether N dists should be plotted, TODO add flag
 }
 fasta.list = NULL
 {
@@ -305,8 +306,8 @@ if(hor.only)
   {
     
     for(i in 1 : length(fasta.sequence)) {
-      HOR.wrapper(threshold = 5, 
-                  cutoff = 2, 
+      HOR.wrapper(threshold = max.divergence.value, 
+                  cutoff = min.hor.value,
                   temp.folder = execution.path, 
                   assemblyName = sequences$file.name[i], 
                   chr.name = sequences$fasta.name[i],
@@ -318,8 +319,8 @@ if(hor.only)
   } else
   {
     foreach(i = 1 : length(fasta.sequence)) %dopar% {  
-      HOR.wrapper(threshold = 5, 
-                  cutoff = 2, 
+      HOR.wrapper(threshold = max.divergence.value, 
+                  cutoff = min.hor.value,
                   temp.folder = execution.path, 
                   assemblyName = sequences$file.name[i], 
                   chr.name = sequences$fasta.name[i],
@@ -432,7 +433,7 @@ if(Sys.info()['sysname'] == "Windows")
                                              kmer = set.kmer, window = window.size, threshold = set.threshold, mask.small.regions = filter.small.regions, mask.small.repeats = filter.small.repeats,
                                              max.repeat.size = set.max.repeat.size, LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
                                              tests = 6, temp.folder = execution.path, sequence.template = sequence.templates, mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
-                                             N.max.div , try.until, smooth.percent)
+                                             N.max.div , try.until, smooth.percent, plot.N = plot.N)
       if(typeof(repetitive.regions) == "list")
       {
         if(nrow(repetitive.regions) != 0)
@@ -454,7 +455,7 @@ if(Sys.info()['sysname'] == "Windows")
                                              kmer = set.kmer, window = window.size, threshold = set.threshold, mask.small.regions = filter.small.regions, mask.small.repeats = filter.small.repeats,
                                              max.repeat.size = set.max.repeat.size, LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
                                              tests = 6, temp.folder = execution.path, sequence.template = sequence.templates, mafft.bat.file = paste(installation.path, mafft.local, sep = ""),
-                                             N.max.div , try.until, smooth.percent)
+                                             N.max.div , try.until, smooth.percent, plot.N = plot.N)
       if(typeof(repetitive.regions) == "list")
       {
         if(nrow(repetitive.regions) != 0)

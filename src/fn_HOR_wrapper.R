@@ -9,6 +9,7 @@ HOR.wrapper = function(threshold = 5,
                        class.name = "")
 {
   print(paste("HOR function on ", chr.name, ", using repeats of class ", class.name, sep = ""))
+  print(paste("min.hor.value =  ", cutoff, ", max.divergence.value = ", threshold, sep = ""))
   
   print("Repeat Identification new")
   if(temp.folder == "")

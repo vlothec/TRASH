@@ -1,4 +1,4 @@
-new.distance.N = function(distances, N.max.div = 100, try.until = 12, smooth.percent = 2)
+new.distance.N = function(plot = F, distances, N.max.div = 100, try.until = 12, smooth.percent = 2)
 {
   N = NULL
   
@@ -26,7 +26,11 @@ new.distance.N = function(distances, N.max.div = 100, try.until = 12, smooth.per
     scores.with.multiplications[i] = sum(new.values[possible.multiplications])
     
   }
-  plot(scores.with.multiplications, ylim = c(0, max(scores.with.multiplications)))
+  if(plot)
+  {
+    
+    plot(scores.with.multiplications, ylim = c(0, max(scores.with.multiplications)))
+  }
   
   options(scipen=999)
   scores.ratio = 100 * (1 - (scores.with.multiplications[1:(try.until-1)] / scores.with.multiplications[2:try.until]))
