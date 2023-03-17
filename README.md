@@ -81,6 +81,7 @@ The script will utilize a maximum of 1 core per fasta sequence (not per file) if
 ## Higher Order Repeat (HOR) analysis
 TRASH is able to calculate HORs defined as multi-monomer repeat duplications. It does not try to create a 1-dimentional description of repeat monomers, but uses a 2-dimentional matrix of identity between repeats to find instances of consecutive rows of high similarity. --minhor and --maxdiv control how many repeats constitute a HOR and what is the maximum divergence score between repeats for them to be part of a HOR.
 
+TRASH will also calculate the sum of the lengths of all HORs each repeat is a part of and report it in the repeats table under "repetitiveness" column. 
 
 ## Sequence templates
 An additional .csv file can be provided for the run that contains information on predicted repeat families (here called ’class‘). TRASH will check against these templates and if it finds a match, repeats of the same family will be tagged with the provided name. The csv file consists of 3 columns with the names of "name", "length" and "seq". An example file for Arabidopsis thaliana CEN178 would look like:
@@ -88,6 +89,7 @@ An additional .csv file can be provided for the run that contains information on
 name,length,seq
 CEN178,178,AGTATAAGAACTTAAACCGCAACCGATCTTAAAAGCCTAAGTAGTGTTTCCTTGTTAGAAGACACAAAGCCAAAGACTCATATGGACTTTGGCTACACCATGAAAGCTTTGAGAAGCAAGAAGAAGGTTGGTTAGTGTTTTGGAGTCGAATATGACTTGATGTCATGTGTATGATTG
 ```
+If sequence templates are provided, TRASH is going to align all repeats from each class within each sequence, generate consensus and calculate the Levenshtein distance between each repeat and the consensus as a divergence metric.
 
 ## Output
 
