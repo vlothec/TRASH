@@ -267,6 +267,9 @@ if(exists("draw.scaffold.repeat.plots") &
    exists("kmer.compare") & 
    exists("revCompString")){
   print("All functions available and libraries installed, exiting")
+} else
+{
+  warning("library not installed properly")
 }
 
 
