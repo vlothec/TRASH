@@ -67,7 +67,7 @@ The **/example_run** folder contains a test fasta sequence and results of a TRAS
 --seqt path 		# path to the file with repeat family templates, the file needs to be formatted as described below.
 --par x 			# max number of cores used for multithreading, defaults to 1. If set as 0, TRASH will try to register as many cores as there are sequences, or maximum available, whichever is smaller.
 --randomseed x		# set a random seed for reproducibility of the repeat identification, seed from the previous run can be found in “TRASH_YYYYMMDDHHMMSS.out”.
---N.max.div x       # (monomer splitting method) threshold score above which will look for divisions, the lower, the more loose. 100 by default, meaning the method is turned off.
+--N.max.div x       # (monomer splitting method) threshold score above which will look for divisions, the lower, the more loose. 100 by default, meaning the method is turned off. Suggested setting when a monomer merging arise is 5.
 --max.N.split x       # (monomer splitting method) max number of N divisions, the higher the longer repeats can be split. 12 by default
 --smooth.percent x  # (monomer splitting method) smoothing factor for finding the histogram peaks, the higher the wider. 2 by default
 
@@ -76,7 +76,6 @@ The **/example_run** folder contains a test fasta sequence and results of a TRAS
 
 ## Multithreading
 The script will utilize a maximum of 1 core per fasta sequence (not per file) if available. By default it will use 1 core, which can be controlled with --par flag. 
-
 
 ## Higher Order Repeat (HOR) analysis
 TRASH is able to calculate HORs defined as multi-monomer repeat duplications. It does not try to create a 1-dimentional description of repeat monomers, but uses a 2-dimentional matrix of identity between repeats to find instances of consecutive rows of high similarity. --minhor and --maxdiv control how many repeats constitute a HOR and what is the maximum divergence score between repeats for them to be part of a HOR.
@@ -94,43 +93,44 @@ If sequence templates are provided, TRASH is going to align all repeats from eac
 ## Output
 
 **"all.repeats.from.assembly.fa.csv"**
-A table with the tandem repeats identified, their start and end positions, class (when applicable, if not assigned this will be "NA"), sequence (on the positive strand), and strand information (when repeats are assigned to a class they will be identified according to the provided template, thus possibly placing them on the negative strand. In this case, an additional column will contain sequence information on the negative strand).
+A table of the tandem repeat monomers identified, their start and end positions, class (when applicable if templates have been used, if no templates were provided it will be assigned ‘NA’), sequence (on the positive strand), and strand information. When repeats are assigned to a class they will be identified according to the provided template, thus possibly placing them on the negative strand, an additional column will contain sequence information on the negative strand. Classified repeats also have their edit distance from the sequence-wide consensus calculated. If the HOR identification module was used, a repetitiveness score which is a sum of all HOR lengths (in monomers) that a repeat is a part of is also reported here. 
 
 **"TRASH_assembly.fa.gff"**
-GFF file (https://www.ensembl.org/info/website/upload/gff.html) containing the same information as the .csv repeats file but in a format that can be widely used for genome annotation.
+A GFF file containing the same information as the ‘all.repeats.from.assembly.fa.csv’ file, but in a format that can be widely used for genome annotation analysis and visualisation.
 
 **"plots/assembly_circos.pdf"**
-A circos plot graphically showing information contained in the "RepetitiveRegions_assembly.fa.csv" file plotted against the analysed sequence.
+Circos plot showing the identified repeat monomers using coordinates in the ‘Summary.of.repetitive.regions_assembly.fa.csv’ file plotted against the fasta sequences analysed.
 
 **"Summary.of.repetitive.regions_assembly.fa.csv"**
-Table with regions (arrays) containing tandem repeats, that includes information on their consensus sequence, period size and class (family) when sequence templates are provided
+A table with regions (arrays) containing tandem repeats, including information on their consensus sequence, monomer size and class (family) when sequence templates are provided.
 
 **temp.all.repeats.from.assembly.fa.csv**
-A temporary file with repeats, which can be safely removed once the main file is created. This file can be used for troubleshooting.
+A temporary file containing repeat annotation that can be safely removed once the main file ‘all.repeats.from.assembly.fa.csv’ is created. 
 
 Optional: **"HOR/HOR_plot_assembly.fasta_chrName_class.png"**
-When HORs are calculated, these files are dot plots showing the start locations of the HOR blocks identified.
+When HORs are identified, these files provide dot plots showing the start locations of HOR blocks. 
 
 Optional: **"HORs_assembly.fasta_chrName_class.png.csv"**
-A table listing the HORs identified. Each row contains a pair of HOR blocks, each with their start and end coordinate, the number of divergent positions between them (“total variant”) and the direction (1 means the blocks are in the same orientation, i.e. "head to tail", while 2 means they are on opposite strands, "head to head").
+A table of identified HORs. Each row reports a pair of HOR blocks, with their start and end coordinates, the number of divergent positions between them (‘total variant’) and direction (1 means the blocks are in the same orientation, i.e. ‘head to tail’, while 2 means they are on opposite strands, ‘head to head’).
 
 **/assembly_out** Specifies the directory with temporary files used during the run that can be removed
 **/plots** Specifies the directory containing circos plots, edit.distance plots and HOR.score plots 
 Optional: **/HOR** directory with Higher Order Repeat files
 
 ## Monomer splitting method
-In some cases, the signal from a multiplication of the base repeat might be stronger than the one from the base repeat itself, resulting in identification of repeats in multimers. This can be addressed by changing the "--N.max.div" flag down from 100. This method is off by default, to not overcorrect repeats that could have internal duplications, but are in their base form already.
-
+In some cases, the signal from a multiplication of the base repeat might be stronger than the one from the base repeat itself, resulting in identification of repeats in multimers. To address it, TRASH divides the most frequent k-mer N by a range of integers (2 to 12 by default, with the upper limit controlled using the ‘--max.N.split’ flag) and checks whether peaks exist at these new k-mer distances. For each integer d (2 to 12 by default), TRASH will sum k-mers found surrounding the N/d distance, and take the highest possible d that is above a percentage threshold set by the user. This threshold, controlled with the ‘--N.max.div’ flag, is set at 100 by default, meaning the method is normally not functional. When considering composite numbers (4, 6, 8, 9 etc), TRASH will also consider the number of k-mers around distance values that correspond to division of N by all the positive divisors (other than 1 and itself).
 
 ## Windows
 Windows functionality has not been fully tested (HOR module)
+
+Installation:
 ```
 git clone https://github.com/vlothec/TRASH
 ```
-extract
-Identify Rscript.exe directory
-navigate to TRASH\src directory
-install TRASH with:
+1. Extract the archive
+2. Identify Rscript.exe directory
+3. navigate to TRASH\src directory
+4. install TRASH with:
 ```
 [R installation directory]\Rscript.exe TRASH_install.R
 ```
@@ -138,4 +138,4 @@ run TRASH with:
 ```
 [R installation directory]\Rscript.exe TRASH_run.R [run commands]
 ```
-libs.zip are pre-installed Windows libraries that can be unpacked directly into /libs directory
+win_libs.zip are pre-installed Windows libraries that can be unpacked directly into /libs directory
