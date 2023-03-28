@@ -299,6 +299,33 @@ if(hor.only)
     stop("Repeat class not specified for HOR calculations", call. = FALSE)
   }
   
+  for(i in 1 : length(fasta.list))
+  {
+    print(paste("edit distance", sep = ""))
+    
+    #do edit distance per genome
+    ### this also initiates the repetitiveness column in the repeats data frame
+    calc.edit.distance(temp.folder = execution.path, 
+                       assemblyName = sequences$file.name[i],
+                       fasta.name = sequences$fasta.name[i],
+                       LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
+                       mafft.bat.file = paste(installation.path, mafft.local, sep = ""))
+    
+    
+  }
+  gc()
+  for(i in 1 : length(fasta.sequence))
+  {
+    #plot edit per chromosome
+    plot.edit(temp.folder = execution.path, 
+              assemblyName = sequences$file.name[i], 
+              chr.name = sequences$fasta.name[i],
+              hor.c.script.path = hor.c.script.path,
+              class.name = class.name.for.HOR)
+  }
+  gc()
+  
+  
   print("calculating HORs")
   
   #do HORs per chromosome

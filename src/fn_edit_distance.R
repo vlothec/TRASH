@@ -93,6 +93,10 @@ calc.edit.distance = function(temp.folder = "",#execution.path
         sample.IDs = 1:nrow(repeats.temp)
       }
       
+      if(!dir.exists(paste(paste(assemblyName, "_out", sep = ""),"/temp1", sep = "")))
+      {
+        dir.create(paste(paste(assemblyName, "_out", sep = ""),"/temp1", sep = ""))
+      }
       
       file.to.align = paste(paste(assemblyName, "_out", sep = ""), "/temp1/edit.class.", i, ".fasta", sep = "")
       
