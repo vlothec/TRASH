@@ -67,9 +67,9 @@ The **/example_run** folder contains a test fasta sequence and results of a TRAS
 --seqt path 		# path to the file with repeat family templates, the file needs to be formatted as described below.
 --par x 			# max number of cores used for multithreading, defaults to 1. If set as 0, TRASH will try to register as many cores as there are sequences, or maximum available, whichever is smaller.
 --randomseed x		# set a random seed for reproducibility of the repeat identification, seed from the previous run can be found in “TRASH_YYYYMMDDHHMMSS.out”.
---N.max.div x       # (monomer splitting method) threshold score above which will look for divisions, the lower, the more loose. 100 by default, meaning the method is turned off. Suggested setting when a monomer merging arise is 5.
+--N.max.div x       	# (monomer splitting method) threshold score above which will look for divisions, the lower, the more loose. 100 by default, meaning the method is turned off. Suggested setting when a monomer merging arise is 5.
 --max.N.split x       # (monomer splitting method) max number of N divisions, the higher the longer repeats can be split. 12 by default
---smooth.percent x  # (monomer splitting method) smoothing factor for finding the histogram peaks, the higher the wider. 2 by default
+--smooth.percent x  	# (monomer splitting method) smoothing factor for finding the histogram peaks, the higher the wider. 2 by default
 
 ```
 
