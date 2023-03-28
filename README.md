@@ -29,10 +29,10 @@ TRASH_install.sh
 ```
 Running TRASH_install.sh can be used to check the installation after it's unpacked and installed
 ### (alternative) All-in-one package:
-Download and unpack TRASH_v1.1.tar.gz which will contain the pre-installed image with all required dependencies:
+Download and unpack TRASH_v1.2.tar.gz which will contain the pre-installed image with all required dependencies:
 ```
-wget https://github.com/vlothec/TRASH/raw/main/TRASH.v1.1.tar.gz
-tar -xzvf TRASH.v1.1.tar.gz
+wget https://github.com/vlothec/TRASH/raw/main/TRASH.v1.2.tar.gz
+tar -xzvf TRASH.v1.2.tar.gz
 ```
 
 ## Run
