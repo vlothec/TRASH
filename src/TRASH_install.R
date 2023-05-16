@@ -221,7 +221,7 @@ if(Sys.info()['sysname'] == "Linux")
   } else if(file.exists(paste(installation.path, "/src/mafft-7.490-linux.tgz", sep = "")))
   {
     print("Unpacking mafft")
-    system(paste("tar -xzvf ", installation.path, "/src/mafft-7.490-linux.tgz", sep = ""), intern = TRUE)
+    system(paste("tar -xzvf ", installation.path, "/src/mafft-7.490-linux.tgz -C ", installation.path, "/src", sep = ""), intern = TRUE)
   } else 
   {
     system(paste("wget https://mafft.cbrc.jp/alignment/software/mafft-7.490-linux.tgz", sep = ""))

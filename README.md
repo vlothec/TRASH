@@ -42,6 +42,7 @@ TRASH requires at least one fasta file as an input (with ".fa", ".fna" or ".fast
 TRASH_run.sh assembly.fa --o output.path
 ```
 This will run TRASH with default settings in the output.path directory. 
+Absolute path required at this point. Not specifying path at all will direct the outputs to the curent directory
 ### Example run
 The **/example_run** folder contains a test fasta sequence and results of a TRASH run on this sequence. The sequence is an extraction from chromosome 10 of the CHM13 human genome (coordinates 39,050,443:39,150,442 bp). The test sequence includes several alpha satellite tandem repeat arrays.
 
@@ -63,7 +64,7 @@ The **/example_run** folder contains a test fasta sequence and results of a TRAS
 --m x 			# max repeat size to be identified, hard capped by -win setting.
 --freg x 		# regions smaller than this will be filtered out at initial steps (some might remain if they come from splitting of a larger region).
 --frep x 		# repeats shorter than this will be filtered out, 4 by default.
---o path		# output path where repeats will be saved and temporary directories created.
+--o path		# output path where repeats will be saved and temporary directories created. Use an absolute path
 --seqt path 		# path to the file with repeat family templates, the file needs to be formatted as described below.
 --par x 		# max number of cores used for multithreading, defaults to 1. If set as 0, TRASH will try to register as many cores as there are sequences, or maximum available, whichever is smaller.
 --randomseed x		# set a random seed for reproducibility of the repeat identification, seed from the previous run can be found in “TRASH_YYYYMMDDHHMMSS.out”.
