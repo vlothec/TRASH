@@ -122,7 +122,7 @@ Optional: **/HOR** directory with Higher Order Repeat files
 In some cases, the signal from a multiplication of the base repeat might be stronger than the one from the base repeat itself, resulting in identification of repeats in multimers. To address it, TRASH divides the most frequent k-mer N by a range of integers (2 to 12 by default, with the upper limit controlled using the ‘--max.N.split’ flag) and checks whether peaks exist at these new k-mer distances. For each integer d (2 to 12 by default), TRASH will sum k-mers found surrounding the N/d distance, and take the highest possible d that is above a percentage threshold set by the user. This threshold, controlled with the ‘--N.max.div’ flag, is set at 100 by default, meaning the method is normally not functional. When considering composite numbers (4, 6, 8, 9 etc), TRASH will also consider the number of k-mers around distance values that correspond to division of N by all the positive divisors (other than 1 and itself).
 
 ## Windows
-Windows functionality has not been fully tested (HOR module)
+Windows functionality has not been fully tested (especially the HOR module), but most call-outs and installation have been adjusted for Windows use.
 
 Installation:
 ```
@@ -140,3 +140,10 @@ run TRASH with:
 [R installation directory]\Rscript.exe TRASH_run.R [run commands]
 ```
 win_libs.zip are pre-installed Windows libraries that can be unpacked directly into /libs directory
+
+## Cite
+
+Piotr Wlodzimierz and others, TRASH: Tandem Repeat Annotation and Structural Hierarchy, 
+Bioinformatics, Volume 39, Issue 5, May 2023, btad308, 
+https://doi.org/10.1093/bioinformatics/btad308
+
