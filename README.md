@@ -143,7 +143,7 @@ win_libs.zip are pre-installed Windows libraries that can be unpacked directly i
 
 ## Cite
 
-Piotr Wlodzimierz and others, TRASH: Tandem Repeat Annotation and Structural Hierarchy, 
+Wlodzimierz P, Hong M, Henderson IR, TRASH: Tandem Repeat Annotation and Structural Hierarchy, 
 Bioinformatics, Volume 39, Issue 5, May 2023, btad308, 
 https://doi.org/10.1093/bioinformatics/btad308
 
