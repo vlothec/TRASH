@@ -4,6 +4,11 @@ circos_plotter <- function(outputs.directory, assemblyName, chr_names, chr_lengt
   print("circos")
   setwd(outputs.directory)
   #file <- list.files(outputs.directory, pattern = "Summary")
+  if(!file.exists(paste(outputs.directory, "/Summary.of.repetitive.regions.", assemblyName, ".csv", sep = "")))
+  {
+    print("No repeats to plot, circos plot won't be created")
+    return(1)
+  }
   repeats <- read.csv(paste(outputs.directory, "/Summary.of.repetitive.regions.", assemblyName, ".csv", sep = ""))
   repeats$most.freq.value.N <- as.integer(repeats$most.freq.value.N)
   

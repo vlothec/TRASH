@@ -513,38 +513,41 @@ for(i in 1 : length(fasta.list))
   setwd(paste(execution.path, "/", sep = ""))
   print(execution.path)
   repeat.files = list.files(path = paste("./", unique(sequences$file.name)[i], "_out", sep = ""), pattern = "Regions*", full.names = T)
-  print(repeat.files)
-  #repeat.files = system(paste("find ./", unique(sequences$file.name)[i], "_out", " -name \"Regions*\"", sep = ""), intern = TRUE)
-  regions = NULL
-  for(j in 1 : length(repeat.files))
+  if(length(repeat.files) > 0)
   {
-    region.read = read.csv(file = paste(repeat.files[j], sep = ""))
-    if(nrow(region.read) > 1)
+    print(repeat.files)
+    #repeat.files = system(paste("find ./", unique(sequences$file.name)[i], "_out", " -name \"Regions*\"", sep = ""), intern = TRUE)
+    regions = NULL
+    for(j in 1 : length(repeat.files))
     {
-      regions = rbind(regions, region.read)
+      region.read = read.csv(file = paste(repeat.files[j], sep = ""))
+      if(nrow(region.read) > 1)
+      {
+        regions = rbind(regions, region.read)
+      }
     }
-  }
-  regions = regions[,-c(1)]
-  write.csv(x = regions, file = paste(execution.path, "/Summary.of.repetitive.regions.", unique(sequences$file.name)[i], ".csv", sep = ""), quote = FALSE)
-  
-  
-  extract.all.repeats(temp.folder = execution.path, assemblyName = unique(sequences$file.name)[i])
-  
-  gc()
-  
-  export.gff(temp.folder = execution.path, 
-             assemblyName = unique(sequences$file.name)[i])
-  
-  gc()
-  
-  if(delete_temp_output)
-  {
-    if(file.exists(paste(execution.path, "/", sequences$file.name[i], "_out", sep = "")))
+    regions = regions[,-c(1)]
+    write.csv(x = regions, file = paste(execution.path, "/Summary.of.repetitive.regions.", unique(sequences$file.name)[i], ".csv", sep = ""), quote = FALSE)
+    
+    
+    extract.all.repeats(temp.folder = execution.path, assemblyName = unique(sequences$file.name)[i])
+    
+    gc()
+    
+    export.gff(temp.folder = execution.path, 
+               assemblyName = unique(sequences$file.name)[i])
+    
+    gc()
+    
+    if(delete_temp_output)
     {
-      unlink(x = paste(execution.path, "/", sequences$file.name[i], "_out", sep = ""), recursive = TRUE, force = FALSE)
+      if(file.exists(paste(execution.path, "/", sequences$file.name[i], "_out", sep = "")))
+      {
+        unlink(x = paste(execution.path, "/", sequences$file.name[i], "_out", sep = ""), recursive = TRUE, force = FALSE)
+      }
     }
+    print(paste("finished saving", sep = ""))
   }
-  print(paste("finished saving", sep = ""))
 }
 
 
