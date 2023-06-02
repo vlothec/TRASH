@@ -1,5 +1,5 @@
 # TRASH: Tandem Repeat Annotation and Structural Hierarchy
-A package to Identify identify and extract tandem repeats in genome sequences and investigate their higher order structures.
+A package to identify and extract tandem repeats in genome sequences and investigate their higher order structures.
 
 ### Overview:
 TRASH performs local  **kmer** counting to find regions that are repetitive. Windows are scored based on the proportion of repeated k-mers. Those windows which score above the  **threshold** are considered to contain repeats. The periodicity of tandem repeats is then established and used to find a consensus sequence and map the repeat unites. Periodicity of repeats is established and used to find a consensus sequence and map the repeats. Higher order repeats can be identified as pairs of repeat blocks which are highly similar to each other.
