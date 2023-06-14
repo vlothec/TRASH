@@ -12,7 +12,17 @@ export.gff = function(temp.folder = "",
 {
   print("Export gff function")
 
+  if(!file.exists(paste(execution.path, "/all.repeats.from.", assemblyName, ".csv", sep = "")))
+  {
+    return(1)
+  }
+  
   repeats = read.csv(file = paste(execution.path, "/all.repeats.from.", assemblyName, ".csv", sep = ""))
+  
+  if(nrow(repeats) == 0)
+  {
+    return(1)
+  }
   
   print("read repeats")
   
