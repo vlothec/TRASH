@@ -719,13 +719,13 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
         {
           highest = 0
           check.seq = regions.data.frame$consensus.primary[i]
-          if((nchar(check.seq) > (min(sequence.template$length)-10)) & (nchar(check.seq) < (max(sequence.template$length)+10)))
+          if((nchar(check.seq) > (min(sequence.template$length)*0.8)) & (nchar(check.seq) < (max(sequence.template$length)*1.2)))
           {
             highest = 0
             scores = 0
             for(ii in 1 : nrow(sequence.template))
             {
-              if((nchar(check.seq) > (sequence.template$length[ii])*0.9) & (nchar(check.seq) < (sequence.template$length[ii])*1.1))
+              if((nchar(check.seq) > (sequence.template$length[ii])*0.8) & (nchar(check.seq) < (sequence.template$length[ii])*1.2))
               {
                 a = kmer.compare(sequence.template$seq[ii], check.seq)
                 if(a > scores)
