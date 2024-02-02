@@ -166,13 +166,25 @@ fasta.list = NULL
       {
         if(file.exists(paste(execution.path, arguments[i], sep = "/")))
         {
-          fasta.list = c(fasta.list, paste(execution.path, arguments[i], sep = "/"))
+          if(!dir.exists(paste(execution.path, arguments[i], sep = "/")))
+          {
+            if(startsWith(readLines(paste(execution.path, arguments[i], sep = "/"), n = 1), ">"))
+            {
+              fasta.list = c(fasta.list, paste(execution.path, arguments[i], sep = "/"))
+            }
+          }
         } else if(file.exists(arguments[i]))
         {
-          fasta.list = c(fasta.list, arguments[i])
+          if(!dir.exists(arguments[i]))
+          { 
+            if(startsWith(readLines(arguments[i], n = 1), ">"))
+            {
+              fasta.list = c(fasta.list, arguments[i])
+            }
+          }
         } else
         {
-          stop(paste("Cannot find the", arguments[i], "fasta file specified", sep = ""), call. = FALSE)
+          warning(paste("Cannot find the", arguments[i], "fasta file, proceeding regardless", sep = " "), call. = FALSE)
         }
       }
     }
@@ -184,7 +196,7 @@ fasta.list = NULL
   } 
 }
 
-
+if(length(fasta.list) == 0) stop("No fasta files found, exiting", call. = FALSE)
 
 if(change.lib.paths)
 {
@@ -463,7 +475,7 @@ if(Sys.info()['sysname'] == "Windows")
                                              N.max.div , try.until, smooth.percent, plot.N = plot.N)
       if(typeof(repetitive.regions) == "list")
       {
-        if(nrow(repetitive.regions) != 0)
+        if(length(repetitive.regions) != 0)
         {
           write.csv(x = repetitive.regions, file = paste(execution.path, "/", sequences$file.name[i], "_out/Regions_", sequences$file.name[i], "_", sequences$fasta.name[i], ".csv", sep = ""), row.names = FALSE)
         }
@@ -485,7 +497,7 @@ if(Sys.info()['sysname'] == "Windows")
                                              N.max.div , try.until, smooth.percent, plot.N = plot.N)
       if(typeof(repetitive.regions) == "list")
       {
-        if(nrow(repetitive.regions) != 0)
+        if(length(repetitive.regions) != 0)
         {
           write.csv(x = repetitive.regions, file = paste(execution.path, "/", sequences$file.name[i], "_out/Regions_", sequences$file.name[i], "_", sequences$fasta.name[i], ".csv", sep = ""), row.names = FALSE)
         }

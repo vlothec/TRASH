@@ -859,7 +859,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           
           ########## handle overlaps
           primary.size = nchar(regions.data.frame$consensus.primary[i])
-          if(exists(x = "match") && !is.null(match) && !is.na(match) && nrow(match) > 0)
+          if(inherits(match, "data.frame") && nrow(match > 1))
           {
             match = match[order(match$start),]
             iii = nrow(match)
@@ -891,7 +891,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           write(paste("overlaps done, checking strand", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
           
           
-          if(exists(x = "match") && !is.null(match) && !is.na(match) && nrow(match) > 0)
+          if(inherits(match, "data.frame") && nrow(match > 1))
           {
             for(ii in 1 : nrow(match))
             {
@@ -913,7 +913,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           write(paste("adding repeats number", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
           
           
-          if(exists(x = "match") && !is.null(match) && !is.na(match) && nrow(match) > 0)
+          if(inherits(match, "data.frame") && nrow(match > 1))
           {
             repeats.identified[i] = nrow(match)
           } else
@@ -925,7 +925,7 @@ Repeat.Identifier = function(DNA.sequence = "", assemblyName = "", fasta.name = 
           write(paste("aligning", sep = " "), file = paste(paste(assemblyName, "_out", sep = ""), "/", fasta.name, ".debug.txt", sep = ""), append = TRUE)
           
           #align, need more than 1 sequence
-          if(exists(x = "match") && !is.null(match) && !is.na(match) && nrow(match) > 1)
+          if(inherits(match, "data.frame") && nrow(match > 1))
           {
             N = regions.data.frame$most.freq.value.N[i]
             if((nrow(match) * N) > LIMIT.REPEATS.TO.ALIGN)

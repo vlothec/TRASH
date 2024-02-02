@@ -28,8 +28,8 @@ new.distance.N = function(plot = F, distances, N.max.div = 100, try.until = 12, 
   }
   if(plot)
   {
-    
-    plot(scores.with.multiplications, ylim = c(0, max(scores.with.multiplications)))
+    #plot(scores.with.multiplications, ylim = c(0, max(scores.with.multiplications)))
+    plot(dist.hist, xlim = c(0, 500))
   }
   
   options(scipen=999)
