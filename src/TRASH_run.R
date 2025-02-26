@@ -67,7 +67,8 @@ arguments = commandArgs(trailingOnly = TRUE)
   class.name.for.HOR = ""
   delete_temp_output = FALSE
   LIMIT.REPEATS.TO.ALIGN = 35600 #in base pairs
-  simpleplot = FALSE
+  simpleplot = TRUE
+  circosplot = FALSE
   random.seed = NULL
   N.max.div = 100 #fn_new_distance threshold score above which will look for divisions, the lower, the more loose
   try.until = 12 #fn_new_distance max number of N divisions, the higher the longer repeats can be split
@@ -146,6 +147,10 @@ fasta.list = NULL
       {
         simpleplot = TRUE
       }
+      else if(arguments[i] == "--circosplot")
+      {
+        circosplot = TRUE
+      }
       else if(arguments[i] == "--par")
       {
         cores.no = as.numeric(arguments[i + 1])
@@ -162,7 +167,7 @@ fasta.list = NULL
       {
         smooth.percent = as.numeric(arguments[i + 1])
       }
-      if(grepl(".fa", arguments[i]) | grepl(".fna", arguments[i]))
+      if(grepl("\\.(fa|fna|fasta)$", arguments[i]))
       {
         if(file.exists(paste(execution.path, arguments[i], sep = "/")))
         {
@@ -411,20 +416,21 @@ if(PLOTTING.ONLY)
     #print(sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] )
     
     #print(nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) )
+    if(circosplot) {
+      circos_plotter(outputs.directory, 
+                     assemblyName = unique(sequences$file.name)[i], 
+                     chr_names = sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] , 
+                     chr_lengths = nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) , 
+                     plot.min, 
+                     plot.max)
+    }
     
-    circos_plotter(outputs.directory, 
-                   assemblyName = unique(sequences$file.name)[i], 
-                   chr_names = sequences$fasta.name[sequences$file.name == unique(sequences$file.name)[i]] , 
-                   chr_lengths = nchar(fasta.sequence[sequences$file.name == unique(sequences$file.name)[i]]) , 
-                   plot.min, 
-                   plot.max)
     
     if(simpleplot) #old plotting, can be turned on additionally
     {
       if(draw.scaffold.repeat.plots(temp.folder = execution.path, 
                                     assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], 
                                     fastaDirectory = fasta.list[i], 
-                                    only.Chr1_5 = FALSE, 
                                     single.pngs = TRUE, y.max = set.max.repeat.size) != 0)
       {
         print("plotting likely failed")
@@ -666,7 +672,6 @@ for(i in 1 : length(fasta.list))
     if(draw.scaffold.repeat.plots(temp.folder = execution.path, 
                                   assemblyName = strsplit(fasta.list[i], split = "/")[[1]][length(strsplit(fasta.list[i], split = "/")[[1]])], 
                                   fastaDirectory = fasta.list[i], 
-                                  only.Chr1_5 = FALSE, 
                                   single.pngs = TRUE, y.max = set.max.repeat.size) != 0)
     {
       print("plotting likely failed")

@@ -1,6 +1,6 @@
 
 
-draw.scaffold.repeat.plots = function(temp.folder = "", assemblyName = "", fastaDirectory = "", only.Chr1_5 = TRUE, single.pngs = FALSE, y.max = 600)
+draw.scaffold.repeat.plots = function(temp.folder = "", assemblyName = "", fastaDirectory = "", single.pngs = FALSE, y.max = 600)
 {
   fasta = read.fasta(fastaDirectory, as.string = TRUE)
   if(temp.folder == "")
@@ -23,19 +23,13 @@ draw.scaffold.repeat.plots = function(temp.folder = "", assemblyName = "", fasta
   
   files = list.files(path = paste(temp.folder, "/", paste(assemblyName, "_out", sep = ""), "/temp2", sep = ""), pattern = "Repeats*")
   
-  if(only.Chr1_5 == TRUE)
-  {
-    a = as.data.frame(str_split(files, pattern = "_", simplify = TRUE))
-    files = files[which(a$V2 == "Chr1" | a$V2 == "Chr2" | a$V2 == "Chr3" | a$V2 == "Chr4" | a$V2 == "Chr5")]
-  }
-  
   rbPal = colorRampPalette(c('red','blue'))
   
   if(single.pngs == FALSE)
   {
     #save as a single pdf
     i = 1
-    pdf(file = paste(temp.folder, "/", paste(assemblyName, "_out", sep = ""), "/plots/", assemblyName, ".pdf", sep = ""), width = 50, height = 10, pointsize = 30)
+    pdf(file = paste(temp.folder, "/plots/", assemblyName, "_linearplot.pdf", sep = ""), width = 50, height = 10, pointsize = 30)
     while(i < length(files))
     {
       k = i
@@ -76,7 +70,7 @@ draw.scaffold.repeat.plots = function(temp.folder = "", assemblyName = "", fasta
       
       if(length(fragment.length) > 0)
       {
-        png(filename = paste(temp.folder, "/", paste(assemblyName, "_out", sep = ""), "/plots/", assemblyName, "_", i, ".png", sep = ""), width = 4000, height = 1000, pointsize = 45)
+        png(filename = paste(temp.folder, "/plots/", assemblyName, "_", i, ".png", sep = ""), width = 4000, height = 1000, pointsize = 45)
         plot(0,0, type="p", xlab="repeat start position", ylab="repeat size", xlim=c(0, fragment.length), ylim=c(0, y.max), main = scaffold, cex = 0)
         
         while(k <= length(files) && paste((str_split(files[k], pattern = "_")[[1]])[2 : (length((str_split(files[k], pattern = "_")[[1]])) - 2)], collapse = "_") == scaffold)
