@@ -98,7 +98,7 @@ A simple HOR run can be performed with:
 ```
 TRASH_run.sh assembly.fa --o output.path --t template_file.csv --horclass classname
 ```
-... where template_file.csv is the path to a file containing sequence templates that TRASH will attempt to assign to identified repeats and classname is the name of a class (from the templates file) that HORs will be calculated for. See "Sequence templates" above for the file requirements.
+... where template_file.csv is the path to a file containing sequence templates that TRASH will attempt to assign to identified repeats and classname is the name of a class (from the templates file) that HORs will be calculated for. See "Sequence templates" above for the file requirements and an example Arabidopsis CEN178 repeat template. In that case '--horclass CEN178' could be used to identify HORs for CEN178 repeats.
 
 
 ## Output
