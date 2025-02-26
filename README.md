@@ -7,14 +7,14 @@ TRASH performs local  **kmer** counting to find regions that are repetitive. Win
 ## Requirements:
 
 1. Linux OS (for Windows see below)
-2. R-4.1.3 or newer (any R.4+ version should work)
+2. R-4.4.2 or newer
 
 ## Installation:
 
 ### R
 R can be downloaded from https://cloud.r-project.org/ using the instructions provided. Alternatively, a conda enviroment can be set up and activated with:
 ```
-conda create -n name -c conda-forge r-base=4.1.3 zlib
+conda create -n name -c conda-forge r-base zlib gcc libcurl
 conda activate name
 ```
 ### TRASH installer:
@@ -25,7 +25,7 @@ Adding --def flag to the TRASH_install.sh command will use the default R library
 git clone https://github.com/vlothec/TRASH
 cd TRASH
 chmod +x TRASH_install.sh
-TRASH_install.sh
+./TRASH_install.sh
 ```
 Running TRASH_install.sh can be used to check the installation after it's unpacked and installed
 ### (alternative) All-in-one package:
@@ -51,7 +51,6 @@ The **/example_run** folder contains a test fasta sequence and results of a TRAS
 ```
 --def 			# use the default R packages path.
 --rmtemp 		# remove the "*_out" directory after run completion.
---simpleplot		# output a plot with repeat coordinates and their sizes for each sequence (additionally to the circos plot).
 --horclass name		# set the name of the repeat family that should be used for HOR calculations, required for the HOR module to be activated.
 --limrepno x		# limit alignment sizes (in bp of total sequence) used during the run to calculate consensus, samples repeats to avoid large alignment operations. 78000 by default
 --horonly x		# skip the repeat identification if performed earlier and only calculate HORs, needs to be used together with -horclass flag.
@@ -71,6 +70,7 @@ The **/example_run** folder contains a test fasta sequence and results of a TRAS
 --N.max.div x       	# (monomer splitting method) threshold score above which will look for divisions, the lower, the more loose. 100 by default, meaning the method is turned off. Suggested setting when a monomer merging arise is 5.
 --max.N.split x         # (monomer splitting method) max number of N divisions, the higher the longer repeats can be split. 12 by default
 --smooth.percent x  	# (monomer splitting method) smoothing factor for finding the histogram peaks, the higher the wider. 2 by default
+--circosplot		# outputs a circos plot, turned off by default since no longer maintained.
 
 ```
 
@@ -80,6 +80,8 @@ The script will utilize a maximum of 1 core per fasta sequence (not per file) if
 
 ## Higher Order Repeat (HOR) analysis
 TRASH is able to calculate HORs defined as multi-monomer repeat duplications. It does not try to create a 1-dimentional description of repeat monomers, but uses a 2-dimentional matrix of identity between repeats to find instances of consecutive rows of high similarity. --minhor and --maxdiv control how many repeats constitute a HOR and what is the maximum divergence score between repeats for them to be part of a HOR.
+
+--horclass needs to be specified for the module to work. --horonly can be used when the repeats are already identified and only the HOR identification is required, but the arguments of the initial repeat identification run need to be provided in the command.
 
 TRASH will also calculate the sum of the lengths of all HORs each repeat is a part of and report it in the repeats table under "repetitiveness" column. 
 
