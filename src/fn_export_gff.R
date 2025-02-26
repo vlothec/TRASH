@@ -51,7 +51,9 @@ export.gff = function(temp.folder = "",
   
   print("wrtiting repeats")
   options(scipen=10)
-  write.table(x = gff_format, file = paste(temp.folder, "/TRASH_", assemblyName, ".gff", sep = ""), quote = FALSE, sep = "\t", eol = "\n", row.names = FALSE, col.names = FALSE, )
+
+  write.table(x = gff_format, file = paste(temp.folder, "/TRASH_", assemblyName, ".gff", sep = ""), quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE, )
+
   options(scipen=0)
   
 }
