@@ -76,7 +76,7 @@ if(!require("stringr", quietly = TRUE, warn.conflicts = FALSE,  lib.loc = .libPa
 {
   if(Sys.info()['sysname'] == "Linux")
   {
-    install_version("stringr", version = "1.4.0", repos = "http://cran.us.r-project.org")
+    install_version("stringr", repos = "http://cran.us.r-project.org") #, version = "1.4.0"
   } else
   {
     install.packages("stringr", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
@@ -93,7 +93,7 @@ if(!require("stringdist", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .lib
 {
   if(Sys.info()['sysname'] == "Linux")
   {
-    install_version("stringdist", version = "0.9.8", repos = "http://cran.us.r-project.org")
+    install_version("stringdist", repos = "http://cran.us.r-project.org", ) #, version = "0.9.8"
   } else
   {
     install.packages("stringdist", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
@@ -106,30 +106,30 @@ if(!require("stringdist", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .lib
   }
 }
 
-print("loading base")
-if(!require("base"))
-{
-  if(Sys.info()['sysname'] == "Linux")
-  {
-    install_version("base", version = "4.0.3", repos = "http://cran.us.r-project.org")
-  } else
-  {
-    install.packages("base", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
-  }
-  
-  library("base", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1])
-  if(packageVersion("base") != "4.0.3")
-  {
-    print(paste("\"base\" library version is different than recommended (4.0.3). Consider installing TRASH in a new folder (see manual)"))
-  }
-}
+# print("loading base")
+# if(!require("base"))
+# {
+#   if(Sys.info()['sysname'] == "Linux")
+#   {
+#     install_version("base", version = "4.0.3", repos = "http://cran.us.r-project.org")
+#   } else
+#   {
+#     install.packages("base", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
+#   }
+#   
+#   library("base", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1])
+#   if(packageVersion("base") != "4.0.3")
+#   {
+#     print(paste("\"base\" library version is different than recommended (4.0.3). Consider installing TRASH in a new folder (see manual)"))
+#   }
+# }
 
 print("loading BiocManager")
 if(!require("BiocManager", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1]))
 {
   if(Sys.info()['sysname'] == "Linux")
   {
-    install.packages("BiocManager", version = "1.30.16", repos = "http://cran.us.r-project.org")
+    install.packages("BiocManager", repos = "http://cran.us.r-project.org") #, version = "1.30.16"
   } else
   {
     install.packages("BiocManager", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
@@ -150,12 +150,20 @@ if(!require("Biostrings", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .lib
   library("Biostrings", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1])
 }
 
+print("loading pwalign")
+if(!require("pwalign", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1]))
+{
+  BiocManager::install("pwalign")
+  
+  library("pwalign", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1])
+}
+
 print("loading circlize")
 if(!require("circlize", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPaths()[1]))
 {
   if(Sys.info()['sysname'] == "Linux")
   {
-    install_version("circlize", version = "0.4.15", repos = "http://cran.us.r-project.org")
+    install_version("circlize", repos = "http://cran.us.r-project.org") #, version = "0.4.15"
   } else
   {
     install.packages("circlize", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
@@ -173,7 +181,7 @@ if(!require("seqinr", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .libPath
 {
   if(Sys.info()['sysname'] == "Linux")
   {
-    install_version("seqinr", version = "4.2.8", repos = "http://cran.us.r-project.org")
+    install_version("seqinr", repos = "http://cran.us.r-project.org") #, version = "4.2.8"
   } else
   {
     install.packages("seqinr", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
@@ -191,7 +199,7 @@ if(!require("doParallel", quietly = TRUE, warn.conflicts = FALSE, lib.loc = .lib
 {
   if(Sys.info()['sysname'] == "Linux")
   {
-    install_version("doParallel", version = "1.0.17", repos = "http://cran.us.r-project.org")
+    install_version("doParallel", repos = "http://cran.us.r-project.org") #, version = "1.0.17"
   } else
   {
     install.packages("doParallel", repos = "http://cran.us.r-project.org", lib = .libPaths()[1])
