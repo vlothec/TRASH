@@ -63,7 +63,7 @@ calc.edit.distance = function(temp.folder = "",#execution.path
       rm_class = c(rm_class, i)
     }
   }
-  classes = classes[-rm_class]
+  if(length(rm_class) != 0) classes = classes[-rm_class]
   
   repeats$edit.distance = NA
   repeats$repetitiveness = NA

@@ -53,7 +53,7 @@ arguments = commandArgs(trailingOnly = TRUE)
   skip.repetitive.regions = FALSE
   change.lib.paths = TRUE
   cores.no = 1
-  max.divergence.value = 7 # max variants allowed for HOR identification
+  max.divergence.value = 25 # max variants allowed for HOR identification
   min.hor.value = 3 #HORs of shorter sizes than this in monomers will not be saved 
   skip.short.fasta.sequences = 0
   set.kmer = 10 # kmer size used for initial identification of repetitive regions
@@ -215,6 +215,7 @@ suppressPackageStartupMessages(library(Biostrings, quietly = TRUE))
 suppressPackageStartupMessages(library(seqinr, quietly = TRUE))
 suppressPackageStartupMessages(library(doParallel, quietly = TRUE))
 suppressPackageStartupMessages(library(circlize, quietly = TRUE))
+suppressPackageStartupMessages(library(pwalign, quietly = TRUE))
 
 if(Sys.info()['sysname'] == "Linux")
 {
@@ -311,31 +312,31 @@ if(hor.only)
     stop("Repeat class not specified for HOR calculations", call. = FALSE)
   }
   
-  for(i in 1 : length(fasta.list))
-  {
-    print(paste("edit distance", sep = ""))
-    
-    #do edit distance per genome
-    ### this also initiates the repetitiveness column in the repeats data frame
-    calc.edit.distance(temp.folder = execution.path, 
-                       assemblyName = sequences$file.name[i],
-                       fasta.name = sequences$fasta.name[i],
-                       LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
-                       mafft.bat.file = paste(installation.path, mafft.local, sep = ""))
-    
-    
-  }
-  gc()
-  for(i in 1 : length(fasta.sequence))
-  {
-    #plot edit per chromosome
-    plot.edit(temp.folder = execution.path, 
-              assemblyName = sequences$file.name[i], 
-              chr.name = sequences$fasta.name[i],
-              hor.c.script.path = hor.c.script.path,
-              class.name = class.name.for.HOR)
-  }
-  gc()
+  # for(i in 1 : length(fasta.list))
+  # {
+  #   print(paste("edit distance", sep = ""))
+  #   
+  #   #do edit distance per genome
+  #   ### this also initiates the repetitiveness column in the repeats data frame
+  #   calc.edit.distance(temp.folder = execution.path, 
+  #                      assemblyName = sequences$file.name[i],
+  #                      fasta.name = sequences$fasta.name[i],
+  #                      LIMIT.REPEATS.TO.ALIGN = LIMIT.REPEATS.TO.ALIGN,
+  #                      mafft.bat.file = paste(installation.path, mafft.local, sep = ""))
+  #   
+  #   
+  # }
+  # gc()
+  # for(i in 1 : length(fasta.sequence))
+  # {
+  #   #plot edit per chromosome
+  #   plot.edit(temp.folder = execution.path, 
+  #             assemblyName = sequences$file.name[i], 
+  #             chr.name = sequences$fasta.name[i],
+  #             hor.c.script.path = hor.c.script.path,
+  #             class.name = class.name.for.HOR)
+  # }
+  # gc()
   
   
   print("calculating HORs")
