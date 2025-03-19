@@ -18,7 +18,7 @@ conda create -n name -c conda-forge r-base zlib gcc libcurl
 conda activate name
 ```
 ### TRASH installer:
-Download TRASH and run TRASH_install.sh. This will allow to control whether R packages will be downloaded to a system-default directory or TRASH directory (as in the pre-installed version). Downloaded libraries will be of a specific version, which might cause problems if other versions are already installed.
+Download TRASH and run TRASH_install.sh. This will allow to control whether R packages will be downloaded to a system-default directory or TRASH directory. 
 
 Adding --def flag to the TRASH_install.sh command will use the default R library path to install new packages. However, note that this will require the use of –def flag each time TRASH is run! This option is suitabel for users that already have multiple R libraries installed and wish to ensure the installation takes as little space as possible by avoiding redundant packages.
 ```
