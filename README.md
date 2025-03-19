@@ -1,4 +1,5 @@
-# New version available at https://github.com/vlothec/TRASH_2
+# New version available
+## https://github.com/vlothec/TRASH_2
 It is an early-development version, but should be more reliable and receive more consistent updates than this V1. 
 
 
